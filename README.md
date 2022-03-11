@@ -1,24 +1,4 @@
 # PotplayerPanVideo
-<html lang="=" "zh-cn"="">
-
-<head>
-    <style>
-        .bleucolor {
-            background: linear-gradient(45deg, #12c2e9, #c471ed, #f64f59);
-            font-size: 18px;
-            width: fit-content;
-        }
-
-        h3 {
-            color: #000;
-            background: linear-gradient(45deg, #12c2e9, #c471ed, #f64f59);
-            font-size: 22px;
-            width: 700px;
-        }
-    </style>
-</head>
-
-<body>
     <div id="additional-info" class="user-content" lang="zh-CN">
 
         <h3>📢使用前，准备事项📢</h3>
@@ -61,7 +41,3 @@
             </pre>
         <h2>🍜喜欢此脚本，可以给个好评或收藏。</h2>
     </div>
-
-</body>
-
-</html>
