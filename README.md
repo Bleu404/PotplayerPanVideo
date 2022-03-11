@@ -4,10 +4,8 @@
 <div>2.安装PotPlayer</div>
 <pre style="font-size: 14px;">
 1️⃣、<a href="https://teracloud.jp/en/">TeraCLOUD</a>原始10g空间，用我的推荐码：<strong style="color:red;font-size: 30px;">DDGYA</strong>，可额外获得5g
-
 2️⃣、配置中的密码不是登陆密码，是授权第三方应用的密码，坚果云的 <a href="https://help.jianguoyun.com/?p=2064" rel="nofollow">开启方法</a>;
-<a href="https://teracloud.jp/en/modules/mypage/usage/">TeraClOUD的mypage</a>，中找到Apps Connection，保存好密码，不然下一次要重置
-
+    <a href="https://teracloud.jp/en/modules/mypage/usage/">TeraClOUD的mypage</a>，中找到Apps Connection，保存好密码，不然下一次要重置
 3️⃣、PotPlayer下载<a href="https://bleu.lanzouj.com/iWdnrz59yha">蓝奏云： https://bleu.lanzouj.com/iWdnrz59yha</a> 密码:4xke
 </pre>
 <h3>⚙配置脚本⚙</h3>
@@ -28,10 +26,8 @@ playname=
 playtime=
 topindex=
 extplaylist=https://用户:密码@主机/PanPlaylist/xunlei/Playlist.m3u
-
 2️⃣、上面链接<code>用户</code>、<code>密码</code>、<code>主机</code>，都以可以在脚本配置中找到
-<strong>注意:用户中<code>@</code>应改为<code>%40</code> 其他的@不用改</strong>
-
+    <strong>注意:用户中<code>@</code>应改为<code>%40</code> 其他的@不用改</strong>
 3️⃣、设置potplayer专辑，选择<b>外部播放列表</b>,选择之前新建的.dpl文件
 </pre>
 <h2>🍜喜欢此脚本，可以给个好评或收藏。</h2>
