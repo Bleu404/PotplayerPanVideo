@@ -17,7 +17,7 @@
 // @grant        GM_registerMenuCommand
 // @connect      *
 // @require      https://cdn.jsdelivr.net/npm/sweetalert2@11.1.0/dist/sweetalert2.all.min.js
-// @require      https://cdn.jsdelivr.net/gh/Bleu404/bleutools@1.0/bleutools.min.js
+// @require      https://cdn.jsdelivr.net/npm/bleutools@1.0.0/bleutools.min.js
 // ==/UserScript==
 
 (function () {
