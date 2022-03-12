@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer播放云盘视频
 // @namespace    https://greasyfork.org/zh-CN/users/798733-bleu
-// @version      v1.0.1
+// @version      1.0.2
 // @description  支持🐱‍💻百度网盘(1080p)、🐱‍👤迅雷云盘(720p)👉右键导入播放信息到webdav网盘，PotPlayer实现🥇倍速、🏆无边框、🎬更换解码器、📺渲染器等功能。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -17,7 +17,7 @@
 // @grant        GM_registerMenuCommand
 // @connect      *
 // @require      https://cdn.jsdelivr.net/npm/sweetalert2@11.1.0/dist/sweetalert2.all.min.js
-// @require      https://greasyfork.org/scripts/441249-bleutools/code/bleutools.js?version=1027311
+// @require      https://cdn.jsdelivr.net/gh/Bleu404/bleutools@1.0/bleutools.min.js
 // ==/UserScript==
 
 (function () {
@@ -27,8 +27,8 @@
         itemsInfo,
         arryIndex,
         tempPath,
-        flag,Option,
-        isCheckWebdav = true,
+        flag,Option,observer,
+        isCheckWebdav = true,addOnce = false,
         m3u8File = "#EXTM3U\n",
         flieTypeStr = ".wmv,.rmvb,.avi,.mp4,.mkv,.flv,.swf.mpeg4,.mpeg2,.3gp,.mpga,.qt,.rm,.wmz,.wmd,.wvx,.wmx,.wm,.mpg,.mpeg,mov,.asf,.m4v",
         tools = {
@@ -78,21 +78,17 @@
                 if(info === '#EXTM3U')return
                 await tools.checkPath();
                 await bleu.XHR('PUT', `https://${bleuc.cip}/PanPlaylist/${flag}${tempPath}/${name}`, info, header, 'xml').then(() => {
-                    bleu.swalInfo(`✅${name}`, 3000, 'top-end')
-                }, () => bleu.swalInfo(`❌${name}`, 3000, 'top-end'))
+                    bleu.swalInfo(`✅${name}`, 3000, 'center')
+                }, () => bleu.swalInfo(`❌${name}`, 3000, 'center'))
             },
             checkConfig(){
                 bleuc = JSON.parse(GM_getValue('bleuc')||null)||{cip:'',cun:'',cpw:'',cbdqs:'bd1080',cxlqs:'xl0'}
                 if(!(bleuc.cip!=''&&bleuc.cun!=''&&bleuc.cpw!='')){
-                    bleu.swalInfo(`❗请先设置WEBDAV画质`, '', 'top-end')
+                    bleu.swalInfo(`❗请先设置WEBDAV画质`, '', 'center')
                     return false
                 }
                 if(location.href.indexOf('/s/')>0){
-                    bleu.swalInfo(`❗不支持此页面,请先保存到云盘`, '', 'top-end')
-                    return false
-                }
-                if(location.href.indexOf('/disk/main')>0){
-                    bleu.swalInfo(`❗不支持此页面,请回到旧版页面`, '', 'center')
+                    bleu.swalInfo(`❗不支持此页面,请先保存到云盘`, '', 'center')
                     return false
                 }
                 return true
@@ -141,39 +137,33 @@
             hostname(){
                 flag =  'baidu';
             },
-            addTag() {
-                if (contextMenu.firstChild.innerText.match(/查看.*/)) return
+            addTag(isnew) {
+                if (contextMenu.firstChild.innerText.match(/转存播放信息|查看/)) return
                 let ul = document.createElement('ul');
-                ul.innerHTML = `<li id="bleuReSave"><em class="icon"><img src="https://img.icons8.com/ios-filled/15/000000/cloud-mail.png"/></em>转存播放信息</li>`;
+                isnew?ul.innerHTML = `<div id="bleuReSave" class="wp-ctx-menu__item cursor-p is-has-icon"><p><img src="https://img.icons8.com/ios-filled/15/000000/cloud-mail.png"/><span class="wp-ctx-menu__item-text">转存播放信息</span></p></div>`
+                :ul.innerHTML = `<li id="bleuReSave"><em class="icon"><img src="https://img.icons8.com/ios-filled/15/000000/cloud-mail.png"/></em>转存播放信息</li>`;
                 contextMenu.firstChild.prepend(ul.firstChild);
+                if(location.href.indexOf('/disk/main') > 0)addOnce = true;
             },
             getselectFilesInfo() {
-                let temp = require('system-core:context/context.js').instanceForSystem.list.getSelected();
+                let temp = location.href.indexOf('/disk/main') > 0?
+                document.querySelector('.nd-main-filelist.nd-main-list__table').__vue__.selectedList
+                :require('system-core:context/context.js').instanceForSystem.list.getSelected();
                 baidu._pushItem(temp);
             },
             async updateFile(item) {
-                let BAIDUID = btoa(document.cookie.match(/BAIDUID[^;]*/)[0]),adtoken,
-                    streamUrl = `https://${location.host}/api/streaming?path=${encodeURIComponent(item.id)}&app_id=250528&clienttype=0&type=M3U8_AUTO_${bleuc.cbdqs.substring(2)}&vip=0&jsToken=${unsafeWindow.jsToken}&nom3u8=1&channel=chunlei&web=1&app_id=250528&bdstoken=${locals.get('bdstoken')}&logid=${BAIDUID}&clienttype=0`;
-                await bleu.XHR('GET', streamUrl, undefined, {
-                    withCredentials: true
-                }).then((res) => {
-                    adtoken = res.adToken
-                }, () => {
-                    bleu.swalInfo("🔴💬获取文件信息出错", 3000, 'top-end')
-                })
-                streamUrl = `https://${location.host}/api/streaming?path=${encodeURIComponent(item.id)}&app_id=250528&clienttype=0&type=M3U8_AUTO_${bleuc.cbdqs.substring(2)}&vip=0&jsToken=${unsafeWindow.jsToken}&isplayer=0&check_blue=1&adToken=${adtoken}`;
+                let streamUrl = `https://${location.host}/api/streaming?path=${encodeURIComponent(item.id)}&app_id=250528&clienttype=0&type=M3U8_AUTO_${bleuc.cbdqs.substring(2)}&vip=0&isplayer=0&check_blue=1`;
                 await bleu.XHR('GET', streamUrl, undefined, {
                     withCredentials: true
                 },'txt').then(async(res) => {
-                    res.indexOf("#EXTM3U") < 0 ? bleu.swalInfo(`❌${item.name}`, 3000, 'top-end') :
+                    res.indexOf("#EXTM3U") < 0 ? bleu.swalInfo(`❌${item.name}`, 3000, 'center') :
                         await tools.putFileInWebdav(item.name, res);
                 }, () => {
-                    bleu.swalInfo("🔴💬获取文件信息出错", 3000, 'top-end')
+                    bleu.swalInfo("🔴💬获取文件信息出错", 3000, 'center')
                 })
             },
             async openNextDir(item) {
-                let BAIDUID = btoa(document.cookie.match(/BAIDUID[^;]*/)[0]),
-                    listUrl = `https://${location.host}/api/list?order=name&desc=0&showempty=0&web=1&page=1&num=100&dir=${encodeURIComponent(item.id)}&channel=chunlei&web=1&app_id=250528&bdstoken=${locals.get('bdstoken')}&logid=${BAIDUID}&clienttype=0`;
+                let listUrl = `https://${location.host}/api/list?order=name&desc=0&showempty=0&web=1&page=1&num=100&dir=${encodeURIComponent(item.id)}&channel=chunlei&web=1&app_id=250528&clienttype=0`;
                 await bleu.XHR('GET', listUrl, undefined, {
                     withCredentials: true
                 }).then((res) => {
@@ -182,14 +172,23 @@
                 })
             },
             findContext(node) {
-                if (node.className === 'context-menu') {
+                if (location.href.indexOf('/disk/main') > 0) {
+                    node = document.querySelector('.ctx-menu-container.nd-main-filelist__menu.nd-common-float-menu')
+                    if (!node) return;
                     contextMenu = node;
-                    baidu.addTag();
+                    baidu.addTag(true);
+                    if(addOnce){main.addClickEvent();addOnce=false}
+                }
+                else if(node.className ==='context-menu'){
+                    observer.disconnect();
+                    contextMenu = node;
+                    baidu.addTag(false);
                     main.addClickEvent();
                 }
             },
             closeMenu(){
-                contextMenu.firstChild.style.display = "none";
+                if(location.href.indexOf('/disk/main') < 0)contextMenu.firstChild.style.display = "none"
+                else contextMenu.style.display = "none"
             },
             _pushItem(temp) {
                 itemsInfo[arryIndex] = [];
@@ -239,7 +238,7 @@
             async updateFile(item) {
                 let url = `https://api-pan.xunlei.com/drive/v1/files/${item.id}`;
                 await bleu.XHR('GET', url, undefined,Option.header).then((res) => {
-                    if(res.error){bleu.swalInfo("🔴💬刷新页面，重新获取header", '', 'top-end')}
+                    if(res.error){bleu.swalInfo("🔴💬刷新页面，重新获取header", '', 'center')}
                     let temp=[];
                     res.medias.forEach((item)=>{
                         if (item.link != null) {
@@ -248,12 +247,13 @@
                     url = bleuc.cxlqs === 'xl0'?temp[0]:temp[temp.length-1];
                     m3u8File=m3u8File.replace('#EXTM3U',`#EXTM3U\n#EXTINF:-1 ,${item.name}\n${url}`)
                 }, () => {
-                    bleu.swalInfo("🔴💬刷新页面，重新获取header", '', 'top-end')
+                    bleu.swalInfo("🔴💬刷新页面，重新获取header", '', 'center')
                 })
             },
             async openNextDir(item) {
                 let url  = `https://api-pan.xunlei.com/drive/v1/files?limit=100&parent_id=${item.id}&filters={"phase":{"eq":"PHASE_TYPE_COMPLETE"},"trashed":{"eq":false}}&with_audit=true`;
                 await bleu.XHR('GET', url, undefined,Option.header).then((res) => {
+                    if(res.error){bleu.swalInfo("🔴💬刷新页面，重新获取header", '', 'center');return}
                     arryIndex++;
                     res.files.forEach((item)=>{
                         xunlei._pushItem(item);
@@ -286,7 +286,7 @@
         },
         main = {
             init() {
-                let observer = new MutationObserver(function (mutations) {
+                observer = new MutationObserver(function (mutations) {
                     for (let mutation of mutations) {
                         if (mutation.type === 'childList') {
                             tools.runFunction('findContext',mutation.target);
@@ -322,6 +322,7 @@
                         await tools.runFunction('openNextDir', loopArry[index]);
                         await main.updateAllFiles(itemsInfo[arryIndex]);
                     }
+                    bleu.sleep(800);
                 }
                 tempPath = tempPath.substring(0, tempPath.lastIndexOf('/'));
             },
@@ -331,6 +332,6 @@
     bleu.addCssStyle(tools.cssStyle);
     GM_registerMenuCommand('配置WEBDAV画质', () => {
         bleu.swalUI('WEBDAV画质', tools.configHtml(), '400px').then(tools.saveConfig)
-    })
+    },'w')
     main.init();
 })();
