@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name         PotPlayer播放云盘视频
 // @namespace    https://greasyfork.org/zh-CN/users/798733-bleu
-// @version      1.0.0
+// @version      v1.0.1
 // @description  支持🐱‍💻百度网盘(1080p)、🐱‍👤迅雷云盘(720p)👉右键导入播放信息到webdav网盘，PotPlayer实现🥇倍速、🏆无边框、🎬更换解码器、📺渲染器等功能。
 // @author       bleu
 // @compatible   edge Tampermonkey
 // @compatible   chrome Tampermonkey
 // @compatible   firefox Tampermonkey
 // @license      MIT
-// @match        https://pan.baidu.com/disk/*
-// @match        https://pan.xunlei.com/?path*
+// @match        https://pan.baidu.com/*
+// @match        https://pan.xunlei.com/*
 // @icon         https://img.icons8.com/ios/50/000000/cloud-mail.png
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -17,7 +17,7 @@
 // @grant        GM_registerMenuCommand
 // @connect      *
 // @require      https://cdn.jsdelivr.net/npm/sweetalert2@11.1.0/dist/sweetalert2.all.min.js
-// @require      https://greasyfork.org/scripts/441249-bleutools/code/bleutools.js?version=1026405
+// @require      https://greasyfork.org/scripts/441249-bleutools/code/bleutools.js?version=1027311
 // ==/UserScript==
 
 (function () {
@@ -85,6 +85,14 @@
                 bleuc = JSON.parse(GM_getValue('bleuc')||null)||{cip:'',cun:'',cpw:'',cbdqs:'bd1080',cxlqs:'xl0'}
                 if(!(bleuc.cip!=''&&bleuc.cun!=''&&bleuc.cpw!='')){
                     bleu.swalInfo(`❗请先设置WEBDAV画质`, '', 'top-end')
+                    return false
+                }
+                if(location.href.indexOf('/s/')>0){
+                    bleu.swalInfo(`❗不支持此页面,请先保存到云盘`, '', 'top-end')
+                    return false
+                }
+                if(location.href.indexOf('/disk/main')>0){
+                    bleu.swalInfo(`❗不支持此页面,请回到旧版页面`, '', 'center')
                     return false
                 }
                 return true
@@ -238,7 +246,7 @@
                             temp.push(item.media_name === '原始画质' ? res.web_content_link : item.link.url)}
                     })
                     url = bleuc.cxlqs === 'xl0'?temp[0]:temp[temp.length-1];
-                    m3u8File=m3u8File.replace('#EXTM3U',`#EXTM3U\n#EXTINF:-1 ,${item.name}\n${url}`) 
+                    m3u8File=m3u8File.replace('#EXTM3U',`#EXTM3U\n#EXTINF:-1 ,${item.name}\n${url}`)
                 }, () => {
                     bleu.swalInfo("🔴💬刷新页面，重新获取header", '', 'top-end')
                 })
