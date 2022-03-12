@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer播放云盘视频
 // @namespace    https://greasyfork.org/zh-CN/users/798733-bleu
-// @version      v1.0.0
+// @version      1.0.0
 // @description  支持🐱‍💻百度网盘(1080p)、🐱‍👤迅雷云盘(720p)👉右键导入播放信息到webdav网盘，PotPlayer实现🥇倍速、🏆无边框、🎬更换解码器、📺渲染器等功能。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -140,12 +140,7 @@
                 contextMenu.firstChild.prepend(ul.firstChild);
             },
             getselectFilesInfo() {
-                let temp;
-                try {
-                    temp = require('system-core:context/context.js').instanceForSystem.list.getSelected();
-                } catch (e) {
-                    temp = document.querySelector('.nd-main-list').__vue__.selectedList;
-                }
+                let temp = require('system-core:context/context.js').instanceForSystem.list.getSelected();
                 baidu._pushItem(temp);
             },
             async updateFile(item) {
