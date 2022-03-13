@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer播放云盘视频
 // @namespace    https://greasyfork.org/zh-CN/users/798733-bleu
-// @version      1.0.3
+// @version      1.0.4
 // @description  支持🐱‍💻百度网盘(1080p)、🐱‍👤迅雷云盘(720p)、🐱‍🏍阿里云盘(1080p)👉右键👈导入播放信息到webdav网盘，PotPlayer实现🥇倍速、🏆无边框、更换解码器、渲染器等功能。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -261,8 +261,8 @@
             async openNextDir(item) {
                 let url  = `https://api-pan.xunlei.com/drive/v1/files?limit=100&parent_id=${item.id}&filters={"phase":{"eq":"PHASE_TYPE_COMPLETE"},"trashed":{"eq":false}}&with_audit=true`;
                 await bleu.XHR('GET', url, undefined,Option.header).then((res) => {
-                    if(res.error){bleu.swalInfo("🔴💬刷新页面，重新获取header", '', 'center');return}
                     arryIndex++;
+                    if(res.error){bleu.swalInfo("🔴💬刷新页面，重新获取header", '', 'center');return}
                     res.files.forEach((item)=>{
                         xunlei._pushItem(item);
                     })
@@ -357,8 +357,8 @@
                         authorization: `${token.token_type} ${token.access_token}`
                     };
                 await bleu.XHR('POST', url, JSON.stringify(data),header).then((res) => {
-                    if(res.code){bleu.swalInfo("🔴💬刷新页面，重新获取", '', 'center');return}
                     arryIndex++;
+                    if(res.code){bleu.swalInfo("🔴💬刷新页面，重新获取", '', 'center');return}
                     res.items.forEach((item)=>{
                         aliyun._pushItem(item);
                     })
