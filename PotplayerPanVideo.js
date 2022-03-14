@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         PotPlayer播放云盘视频
 // @namespace    https://greasyfork.org/zh-CN/users/798733-bleu
-// @version      1.0.4
-// @description  支持🐱‍💻百度网盘(1080p)、🐱‍👤迅雷云盘(720p)、🐱‍🏍阿里云盘(1080p)👉右键👈导入播放信息到webdav网盘，PotPlayer实现🥇倍速、🏆无边框、更换解码器、渲染器等功能。
+// @version      1.0.5
+// @description  支持🐱‍💻百度网盘(1080p)、🐱‍👤迅雷云盘(720p)、🐱‍🏍阿里云盘(1080p)👉右键👈导入播放信息到webdav网盘；支持劫持自定义网站的m3u文件导入webdav网盘。PotPlayer实现🥇倍速、🏆无边框、更换解码器、渲染器等功能。
 // @author       bleu
 // @compatible   edge Tampermonkey
 // @compatible   chrome Tampermonkey
@@ -16,7 +16,9 @@
 // @grant        GM_getValue
 // @grant        GM_xmlhttpRequest
 // @grant        GM_registerMenuCommand
+// @grant        unsafeWindow
 // @connect      *
+// @run-at       document-body
 // @require      https://cdn.jsdelivr.net/npm/sweetalert2@11.1.0/dist/sweetalert2.all.min.js
 // @require      https://cdn.jsdelivr.net/npm/bleutools@1.0.0/bleutools.min.js
 // ==/UserScript==
@@ -41,7 +43,7 @@
                     case 'www.aliyundrive.com':
                         return eval(`aliyun.${Function}(attrval)`);
                     default:
-                        break;
+                        return eval(`others.${Function}(attrval)`);
                 }
             },
             checkFileType(name) {
@@ -388,6 +390,54 @@
             },
             finallyFunc(){
                 tools.putFileInWebdav('Playlist.m3u', m3u8File);
+            }
+        },
+        others = {
+            hostname() {
+                flag = document.domain.replace('www.','');
+                tempPath='';
+                let oriXOpen = XMLHttpRequest.prototype.open;
+                let oriXSend = XMLHttpRequest.prototype.send;
+                function onReadyStateChangeReplacement() {
+                    if (this.readyState == 4) {
+                        if ((this.responseType === '' || this.responseType === 'text') && this.responseText.indexOf('#EXTM3U') === 0) {
+                            console.log('bleu://' + this.responseURL);
+                            this.responseURL.indexOf('https://')!=0?m3u8File = this.responseText:
+                            m3u8File+=`\n#EXTINF:-1 ,${document.title}${Date.parse(new Date())}\n#EXTVLCOPT:http-referrer=${document.referrer}\n${this.responseURL}`;
+                        }
+                    }
+                    if (this._onreadystatechange) {
+                        return this._onreadystatechange.apply(this, arguments);
+                    }
+                }
+                XMLHttpRequest.prototype.open = function (method, url, asncFlag, user, password) {
+                    return oriXOpen.call(this, method, url, asncFlag, user, password);
+                };
+                XMLHttpRequest.prototype.send = function (data) {
+                    if (this.onreadystatechange) {
+                        this._onreadystatechange = this.onreadystatechange;
+                    }
+                    this.onreadystatechange = onReadyStateChangeReplacement;
+                    return oriXSend.call(this, data);
+                }
+            },
+            findContext(node) {
+                observer.disconnect()
+                bleu.sleep(1000);
+                GM_registerMenuCommand('转存页面m3u文件', () => {
+                    if(m3u8File==='#EXTM3U'){
+                        bleu.swalInfo(`❌没有加载m3u文件,等一会再尝试!`, 3000, 'center')
+                        return;
+                    }
+                    let type = m3u8File.indexOf('#EXTINF:-1')<0?'.mp4':'.m3u';
+                    bleu.swalUI('转存页面m3u文件', others._getHtml(), '550px')
+                    document.querySelector('#saveas').addEventListener('click', function () {
+                        tools.putFileInWebdav(document.querySelector('#bleu_name').value + type, m3u8File);
+                    })
+                }, 'm');
+            },
+            _getHtml(){
+                return`<div><input type="text" id="bleu_name" value="${document.title}" style="width: 400px;height: 18px;"/><label>.m3u</label><button id="saveas" style="margin-left: 10px;">转存</button></div>`
             }
         },
         main = {
