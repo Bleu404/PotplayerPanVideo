@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         PotPlayer播放云盘视频
 // @namespace    https://greasyfork.org/zh-CN/users/798733-bleu
-// @version      1.0.5
-// @description  支持🐱‍💻百度网盘(1080p)、🐱‍👤迅雷云盘(720p)、🐱‍🏍阿里云盘(1080p)👉右键👈导入播放信息到webdav网盘；支持劫持自定义网站的m3u文件导入webdav网盘。PotPlayer实现🥇倍速、🏆无边框、更换解码器、渲染器等功能。
+// @version      1.0.6
+// @description  支持🐱‍💻百度网盘(1080p)、🐱‍👤迅雷云盘(720p)、🐱‍🏍阿里云盘(1080p)👉右键👈导入播放信息到webdav网盘；支持劫持自定义匹配网站的m3u文件导入webdav网盘。PotPlayer实现🥇倍速、🏆无边框、更换解码器、渲染器等功能。
 // @author       bleu
 // @compatible   edge Tampermonkey
 // @compatible   chrome Tampermonkey
@@ -18,7 +18,7 @@
 // @grant        GM_registerMenuCommand
 // @grant        unsafeWindow
 // @connect      *
-// @run-at       document-body
+// @run-at       document-start
 // @require      https://cdn.jsdelivr.net/npm/sweetalert2@11.1.0/dist/sweetalert2.all.min.js
 // @require      https://cdn.jsdelivr.net/npm/bleutools@1.0.0/bleutools.min.js
 // ==/UserScript==
@@ -54,7 +54,7 @@
                 let header = {
                     "authorization": `Basic ${btoa(`${bleuc.cun}:${bleuc.cpw}`)}`
                 }
-                if(flag!='baidu')return
+                if(flag==='xunlei'||flag==='aliyun')return
                 await tools.checkPath();
                 await bleu.XHR('MKCOL', `https://${bleuc.cip}/PanPlaylist/${flag}${tempPath}`, undefined, header, 'xml')
             },
@@ -81,8 +81,9 @@
                 }
                 if(info === '#EXTM3U')return
                 await tools.checkPath();
-                await bleu.XHR('PUT', `https://${bleuc.cip}/PanPlaylist/${flag}${tempPath}/${name}`, info, header, 'xml').then(() => {
-                    bleu.swalInfo(`✅${name}`, 3000, 'center')
+                await bleu.XHR('PUT', `https://${bleuc.cip}/PanPlaylist/${flag}${tempPath}/${name}`, info, header, 'xml').then((res) => {
+                    typeof(res)==='string'?bleu.swalInfo(`❌${name}`, 3000, 'center'):
+                    bleu.swalInfo(`✅${name}`, 3000, 'center');
                 }, () => bleu.swalInfo(`❌${name}`, 3000, 'center'))
             },
             checkConfig(){
@@ -394,51 +395,66 @@
         },
         others = {
             hostname() {
-                flag = document.domain.replace('www.','');
-                tempPath='';
-                let oriXOpen = XMLHttpRequest.prototype.open;
-                let oriXSend = XMLHttpRequest.prototype.send;
-                function onReadyStateChangeReplacement() {
-                    if (this.readyState == 4) {
-                        if ((this.responseType === '' || this.responseType === 'text') && this.responseText.indexOf('#EXTM3U') === 0) {
-                            console.log('bleu://' + this.responseURL);
-                            this.responseURL.indexOf('https://')!=0?m3u8File = this.responseText:
-                            m3u8File+=`\n#EXTINF:-1 ,${document.title}${Date.parse(new Date())}\n#EXTVLCOPT:http-referrer=${document.referrer}\n${this.responseURL}`;
-                        }
-                    }
-                    if (this._onreadystatechange) {
-                        return this._onreadystatechange.apply(this, arguments);
-                    }
-                }
-                XMLHttpRequest.prototype.open = function (method, url, asncFlag, user, password) {
-                    return oriXOpen.call(this, method, url, asncFlag, user, password);
-                };
-                XMLHttpRequest.prototype.send = function (data) {
-                    if (this.onreadystatechange) {
-                        this._onreadystatechange = this.onreadystatechange;
-                    }
-                    this.onreadystatechange = onReadyStateChangeReplacement;
-                    return oriXSend.call(this, data);
+                flag ='others' ;
+                tempPath='/'+this._tempPath().replace('www.','')
+                itemsInfo=[];
+                const oriXSend = XMLHttpRequest.prototype.send;
+
+                XMLHttpRequest.prototype.send = function () {
+                    others._onLoad(this);
+                    return oriXSend.apply(this, arguments);
                 }
             },
+            _onLoad(xhr) {
+                xhr.addEventListener("load", async function () {
+                    if (others._watchM3u&&xhr.readyState == 4 && xhr.status >= 200&&xhr.status < 300) {
+                        if (typeof (xhr.response) === 'string') {
+                            if (xhr.response.indexOf('#EXTM3U') === 0) { //通用
+                                observer.disconnect();
+                                itemsInfo.push(xhr.responseURL);
+                                others._getHtmlMenu();
+                            } else if (tempPath === '/agemys.com' && xhr.response.match('http.*mp4')) { //age动漫
+                                observer.disconnect();
+                                itemsInfo.push(decodeURIComponent(xhr.response.match('http.*mp4')[0]));
+                                others._getHtmlMenu();
+                            }
+                        }
+                    }
+                });
+            },
             findContext(node) {
-                observer.disconnect()
-                bleu.sleep(1000);
+                if ((node.tagName == 'VIDEO' || node.tagName == 'IFRAME')&&node.getAttribute('src')&&
+                node.getAttribute('src').match(/http.*mp4/)) {
+                    observer.disconnect()
+                    this._watchM3u=false;
+                    itemsInfo.push(node.getAttribute('src'));
+                    others._getHtmlMenu();
+                }
+            },
+            _getHtmlMenu(){
+                if(this._onceEnough)return
                 GM_registerMenuCommand('转存页面m3u文件', () => {
-                    if(m3u8File==='#EXTM3U'){
+                    if (itemsInfo.length === 0) {
                         bleu.swalInfo(`❌没有加载m3u文件,等一会再尝试!`, 3000, 'center')
                         return;
                     }
-                    let type = m3u8File.indexOf('#EXTINF:-1')<0?'.mp4':'.m3u';
-                    bleu.swalUI('转存页面m3u文件', others._getHtml(), '550px')
-                    document.querySelector('#saveas').addEventListener('click', function () {
-                        tools.putFileInWebdav(document.querySelector('#bleu_name').value + type, m3u8File);
+                    itemsInfo.forEach((item,index) => {
+                        m3u8File += `\n#EXTINF:-1 ,${document.title}_${index}\n#EXTVLCOPT:http-referrer=${this._referrer()}\n${decodeURIComponent(item)}`;
+                    })
+                    bleu.swalUI('转存页面m3u文件', this._html(), '550px')
+                    document.querySelector('#saveas').addEventListener('click', async () => {
+                        await tools.addDavDir();
+                        tools.putFileInWebdav(document.querySelector('#bleu_name').value + '.m3u', m3u8File);
                     })
                 }, 'm');
+                this._onceEnough = true;
             },
-            _getHtml(){
-                return`<div><input type="text" id="bleu_name" value="${document.title}" style="width: 400px;height: 18px;"/><label>.m3u</label><button id="saveas" style="margin-left: 10px;">转存</button></div>`
-            }
+            _onceEnough:false,
+            _watchM3u:true,
+            _oriUrl:location.ancestorOrigins[location.ancestorOrigins.length-1]||undefined,
+            _referrer(){return this._oriUrl||location.origin},
+            _tempPath(){return this._oriUrl&&others._oriUrl.replace(location.protocol+'//','')||location.host},
+            _html(){return `<div><input type="text" id="bleu_name" class="bleuc_inp" value="${document.title}" style="width: 400px"/><label style="font-size: 15px">.m3u</label><span id="saveas" class="bleuc_config_item" style="margin: 10px;border-radius: 3px;color: #000;">转存</span></div>`},
         },
         main = {
             init() {
@@ -449,7 +465,7 @@
                         }
                     }
                 });
-                observer.observe(document.body, {
+                observer.observe(document, {
                     'childList': true,
                     'subtree': true
                 });
