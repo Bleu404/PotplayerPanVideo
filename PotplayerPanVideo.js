@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer播放云盘视频
 // @namespace    https://greasyfork.org/zh-CN/users/798733-bleu
-// @version      1.0.6
+// @version      1.0.7
 // @description  支持🐱‍💻百度网盘(1080p)、🐱‍👤迅雷云盘(720p)、🐱‍🏍阿里云盘(1080p)👉右键👈导入播放信息到webdav网盘；支持劫持自定义匹配网站的m3u文件导入webdav网盘。PotPlayer实现🥇倍速、🏆无边框、更换解码器、渲染器等功能。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -20,7 +20,7 @@
 // @connect      *
 // @run-at       document-start
 // @require      https://cdn.jsdelivr.net/npm/sweetalert2@11.1.0/dist/sweetalert2.all.min.js
-// @require      https://cdn.jsdelivr.net/npm/bleutools@1.0.0/bleutools.min.js
+// @require      https://cdn.jsdelivr.net/npm/bleutools@1.0.1/bleutools.min.js
 // ==/UserScript==
 (function () {
     'use strict';
@@ -34,16 +34,16 @@
         m3u8File = "#EXTM3U",
         flieTypeStr = ".wmv,.rmvb,.avi,.mp4,.mkv,.flv,.swf.mpeg4,.mpeg2,.3gp,.mpga,.qt,.rm,.wmz,.wmd,.wvx,.wmx,.wm,.mpg,.mpeg,mov,.asf,.m4v",
         tools = {
-            runFunction(Function, attrval) {
+            runFunction(funcName, attrval) {
                 switch (document.domain) {
                     case 'pan.baidu.com':
-                        return eval(`baidu.${Function}(attrval)`);
+                        return  baidu[funcName](attrval);
                     case 'xunlei.com':
-                        return eval(`xunlei.${Function}(attrval)`);
+                        return xunlei[funcName](attrval);
                     case 'www.aliyundrive.com':
-                        return eval(`aliyun.${Function}(attrval)`);
+                        return aliyun[funcName](attrval);
                     default:
-                        return eval(`others.${Function}(attrval)`);
+                        return others[funcName](attrval);
                 }
             },
             checkFileType(name) {
@@ -66,7 +66,7 @@
                 if (isCheckWebdav) {
                     isCheckWebdav = false;
                     return await bleu.XHR('PROPFIND', url, undefined, header, 'xml').then(async(res) => {
-                        if (res.indexOf('HTTP/1.1 200 OK') < 0) {
+                        if (!(res.status>=200&&res.status<300)) {
                             url = `https://${bleuc.cip}/PanPlaylist/`
                             await bleu.XHR('MKCOL', url, undefined, header, 'xml')
                             url = `https://${bleuc.cip}/PanPlaylist/${flag}/`
@@ -82,8 +82,8 @@
                 if(info === '#EXTM3U')return
                 await tools.checkPath();
                 await bleu.XHR('PUT', `https://${bleuc.cip}/PanPlaylist/${flag}${tempPath}/${name}`, info, header, 'xml').then((res) => {
-                    typeof(res)==='string'?bleu.swalInfo(`❌${name}`, 3000, 'center'):
-                    bleu.swalInfo(`✅${name}`, 3000, 'center');
+                    res.status>=200&&res.status<300?bleu.swalInfo(`✅${name}`, 3000, 'center'):
+                    bleu.swalInfo(`❌${name}`, 3000, 'center');
                 }, () => bleu.swalInfo(`❌${name}`, 3000, 'center'))
             },
             checkConfig(){
@@ -169,8 +169,8 @@
                 await bleu.XHR('GET', streamUrl, undefined, {
                     withCredentials: true
                 },'txt').then(async(res) => {
-                    res.indexOf("#EXTM3U") < 0 ? bleu.swalInfo(`❌${item.name}`, 3000, 'center') :
-                        await tools.putFileInWebdav(item.name, res);
+                    res.status>=200&&res.status<300 ?await tools.putFileInWebdav(item.name, res.response):
+                    bleu.swalInfo(`❌${item.name}`, 3000, 'center') ;
                 }, () => {
                     bleu.swalInfo("🔴💬获取文件信息出错", 3000, 'center')
                 })
@@ -181,7 +181,7 @@
                     withCredentials: true
                 }).then((res) => {
                     arryIndex++;
-                    baidu._pushItem(res.list);
+                    baidu._pushItem(res.response.list);
                 })
             },
             findContext(node) {
@@ -249,11 +249,11 @@
             async updateFile(item) {
                 let url = `https://api-pan.xunlei.com/drive/v1/files/${item.id}`;
                 await bleu.XHR('GET', url, undefined,Option.header).then((res) => {
-                    if(res.error){bleu.swalInfo("🔴💬刷新页面，重新获取header", '', 'center')}
+                    if(!(res.status>=200&&res.status<300)){bleu.swalInfo("🔴💬刷新页面，重新获取header", '', 'center')}
                     let temp=[];
-                    res.medias.forEach((item)=>{
+                    res.response.medias.forEach((item)=>{
                         if (item.link != null) {
-                            temp.push(item.media_name === '原始画质' ? res.web_content_link : item.link.url)}
+                            temp.push(item.media_name === '原始画质' ? res.response.web_content_link : item.link.url)}
                     })
                     url = bleuc.cxlqs === 'xl0'?temp[0]:temp[temp.length-1];
                     m3u8File=m3u8File.replace('#EXTM3U',`#EXTM3U\n#EXTINF:-1 ,${item.name}\n${url}`)
@@ -265,8 +265,8 @@
                 let url  = `https://api-pan.xunlei.com/drive/v1/files?limit=100&parent_id=${item.id}&filters={"phase":{"eq":"PHASE_TYPE_COMPLETE"},"trashed":{"eq":false}}&with_audit=true`;
                 await bleu.XHR('GET', url, undefined,Option.header).then((res) => {
                     arryIndex++;
-                    if(res.error){bleu.swalInfo("🔴💬刷新页面，重新获取header", '', 'center');return}
-                    res.files.forEach((item)=>{
+                    if(!(res.status>=200&&res.status<300)){bleu.swalInfo("🔴💬刷新页面，重新获取header", '', 'center');return}
+                    res.response.files.forEach((item)=>{
                         xunlei._pushItem(item);
                     })
                 })
@@ -338,8 +338,8 @@
                         authorization: `${token.token_type} ${token.access_token}`
                     };
                 await bleu.XHR('POST', url, JSON.stringify(data), header).then((res) => {
-                    if (res.code) {bleu.swalInfo("🔴💬刷新页面，重新获取", '', 'center')}
-                    let temp = res.video_preview_play_info.live_transcoding_task_list;
+                    if(!(res.status>=200&&res.status<300)) {bleu.swalInfo("🔴💬刷新页面，重新获取", '', 'center')}
+                    let temp = res.response.video_preview_play_info.live_transcoding_task_list;
                     url =temp.find((item)=>item.template_id===bleuc.calqs)?temp.find((item)=>item.template_id===bleuc.calqs).url:temp[temp.length-1].url;
                     m3u8File+=`\n#EXTINF:-1 ,${item.name}\n#EXTVLCOPT:http-referrer=https://www.aliyundrive.com/\n${url}`;
                 }, () => {
@@ -361,8 +361,8 @@
                     };
                 await bleu.XHR('POST', url, JSON.stringify(data),header).then((res) => {
                     arryIndex++;
-                    if(res.code){bleu.swalInfo("🔴💬刷新页面，重新获取", '', 'center');return}
-                    res.items.forEach((item)=>{
+                    if(!(res.status>=200&&res.status<300)){bleu.swalInfo("🔴💬刷新页面，重新获取", '', 'center');return}
+                    res.response.items.forEach((item)=>{
                         aliyun._pushItem(item);
                     })
                 })
@@ -396,7 +396,7 @@
         others = {
             hostname() {
                 flag ='others' ;
-                tempPath='/'+this._tempPath().replace('www.','')
+                tempPath='/'+this._tempPath().match(/[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.?/)[0].replace('www.','')
                 itemsInfo=[];
                 const oriXSend = XMLHttpRequest.prototype.send;
 
@@ -408,7 +408,7 @@
             _onLoad(xhr) {
                 xhr.addEventListener("load", async function () {
                     if (others._watchM3u&&xhr.readyState == 4 && xhr.status >= 200&&xhr.status < 300) {
-                        if (typeof (xhr.response) === 'string') {
+                        if (typeof (xhr.response) === 'string'&&xhr.responseURL.match(/^http/)) {
                             if (xhr.response.indexOf('#EXTM3U') === 0) { //通用
                                 observer.disconnect();
                                 itemsInfo.push(xhr.responseURL);
@@ -453,7 +453,7 @@
             _watchM3u:true,
             _oriUrl:location.ancestorOrigins[location.ancestorOrigins.length-1]||undefined,
             _referrer(){return this._oriUrl||location.origin},
-            _tempPath(){return this._oriUrl&&others._oriUrl.replace(location.protocol+'//','')||location.host},
+            _tempPath(){return this._oriUrl&&others._oriUrl||location.host},
             _html(){return `<div><input type="text" id="bleu_name" class="bleuc_inp" value="${document.title}" style="width: 400px"/><label style="font-size: 15px">.m3u</label><span id="saveas" class="bleuc_config_item" style="margin: 10px;border-radius: 3px;color: #000;">转存</span></div>`},
         },
         main = {
