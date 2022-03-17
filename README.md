@@ -12,7 +12,7 @@
 
 ## ⚙配置脚本⚙
 <img src='https://s3.bmp.ovh/imgs/2022/03/5350a1d8a6029b4e.png' width="300px" height="230px" /><br>
-上图是以坚果云为例，填写的脚本WEBDAV画质配置  
+***上图是以坚果云为例，填写的脚本WEBDAV画质配置***  
 
 ## ⚙配置PotPlayer专辑⚙
 **<div style="background-color:#12c2e9">====👇百度网盘👇====</div>**
@@ -54,4 +54,5 @@
 >>- 3.一直点击`下一页`，  
 >>- 4.再输入地址：`https://用户:密码@主机/PanPlaylist/`（参考迅雷云盘），  
 >>- 5.打开文件夹，找到.m3u文件用potplayer播放或其它播放器
+
 <h2>🍜喜欢此脚本，可以给个好评或收藏。</h2>
