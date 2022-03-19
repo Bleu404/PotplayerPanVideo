@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer播放云盘视频
 // @namespace    https://greasyfork.org/zh-CN/users/798733-bleu
-// @version      1.0.7
+// @version      1.1.0
 // @description  支持🐱‍💻百度网盘(1080p)、🐱‍👤迅雷云盘(720p)、🐱‍🏍阿里云盘(1080p)👉右键👈导入播放信息到webdav网盘；支持劫持自定义匹配网站的m3u文件导入webdav网盘。PotPlayer实现🥇倍速、🏆无边框、更换解码器、渲染器等功能。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -18,7 +18,7 @@
 // @grant        GM_registerMenuCommand
 // @grant        unsafeWindow
 // @connect      *
-// @run-at       document-start
+// @run-at       document-body
 // @require      https://cdn.jsdelivr.net/npm/sweetalert2@11.1.0/dist/sweetalert2.all.min.js
 // @require      https://cdn.jsdelivr.net/npm/bleutools@1.0.1/bleutools.min.js
 // ==/UserScript==
@@ -119,15 +119,15 @@
                 <div><label>用户:</label><input type="text" class="bleuc_inp" id="cun" value="${bleuc.cun}"/></div>
                 <div><label>密码:</label><input type="text" class="bleuc_inp" id="cpw" value="${bleuc.cpw}"/></div></p></div>
                 <div class="bleuc_config_item"><b>画质</b><p>
-                <label>百度</label><select class="bleuc_sel" id="cbdqs">
+                <label>百度：</label><select class="bleuc_sel" id="cbdqs">
                 <option value="bd1080">1080p</option>
                 <option value="bd720">720p</option>
                 <option value="bd480">480p</option>
                 <option value="bd360">360p</option></select>
-                <label>迅雷</label><select class="bleuc_sel" id="cxlqs">
+                <label>迅雷：</label><select class="bleuc_sel" id="cxlqs">
                 <option value="xl0">从高到低</option>
                 <option value="xl1">从低到高</option></select>
-                <label>阿里</label><select class="bleuc_sel" id="calqs">
+                <label>阿里：</label><select class="bleuc_sel" id="calqs">
                 <option value="FHD">1080p</option>
                 <option value="HD">720p</option>
                 <option value="SD">540p</option>
@@ -141,9 +141,9 @@
             cssStyle:`
             .bleuc_config_item{border-radius: 10px;font-size: 20px;margin: 12px 50px;color: #fff;background: linear-gradient(45deg,#12c2e9, #c471ed, #f64f59);box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);}
             .bleuc_config_item label{font-size: 15px}
-            .bleuc_config_item input.bleuc_inp{margin: 0px 10px;font-size: 15px;background: linear-gradient(45deg,#12c2e9, #c471ed, #f64f59);border-style:none;color:black}
+            .bleuc_config_item input.bleuc_inp{margin: 0px 10px;font-size: 15px;background: linear-gradient(45deg,#12c2e9, #c471ed, #f64f59);border-style:none;color:black;width:200px}
             .bleuc_config_item p{text-align: left;margin: 0px 20px;}
-            .bleuc_sel{margin: 0px 10px;background: linear-gradient(45deg,#12c2e9, #c471ed, #f64f59);font-size: 15px;border: none;color:black}`,
+            .bleuc_sel{margin: 0px 10px;background: linear-gradient(45deg,#12c2e9, #c471ed, #f64f59);font-size: 15px;border: none;color:black;width:250px}`,
 
         },
         baidu = {
@@ -217,21 +217,7 @@
         },
         xunlei = {
             hostname(){
-                let temp
-                flag =  'xunlei',Option={},Option.header={};
-                Option.header.withCredentials=false;
-                Option.header['content-type']='application/json';
-                for (let key in localStorage) {
-                    temp = localStorage.getItem(key)
-                    if(key.indexOf('credentials')===0){
-                        Option.header.Authorization = JSON.parse(temp).token_type+' '+JSON.parse(temp).access_token;
-                        Option.clientid = key.substring(key.indexOf('_')+1);
-                    }
-                    if(key.indexOf('captcha')===0)
-                    Option.header['x-captcha-token']=JSON.parse(temp).token
-                    if(key==='deviceid')
-                    Option.header['x-device-id'] = temp.substring(temp.indexOf('.')+1,32+temp.indexOf('.')+1)
-                }
+                flag =  'xunlei'
             },
             addTag() {
                 if (contextMenu.innerText.indexOf('转存')===0) return
@@ -241,9 +227,9 @@
                 main.addClickEvent();
             },
             getselectFilesInfo() {
-                let temp = document.querySelectorAll('.pan-list-item');
+                let temp = document.querySelectorAll('li.pan-list-item.pan-list-item-active');
                 temp.forEach((item)=>{
-                    item.__vue__.checked?xunlei._pushItem(item.__vue__.info):item;
+                    this._pushItem(item.__vue__.info);
                 })
             },
             async updateFile(item) {
@@ -275,6 +261,7 @@
                 if (node.className === 'pan-content') {
                     node = node.querySelector('div.pan-dropdown-menu.context-menu');
                     if(!node)return;
+                    this._getHeaderInfo();
                     contextMenu = node;
                     xunlei.addTag();
                 }
@@ -290,6 +277,22 @@
                     'name': temp.name,
                 };
                 itemsInfo[arryIndex].push(itemInfo);
+            },
+            _getHeaderInfo(){
+                Option={},Option.header={};
+                Option.header.withCredentials=false;
+                Option.header['content-type']='application/json';
+                for (let key in localStorage) {
+                    let temp = localStorage.getItem(key)
+                    if(key.indexOf('credentials')===0){
+                        Option.header.Authorization = JSON.parse(temp).token_type+' '+JSON.parse(temp).access_token;
+                        Option.clientid = key.substring(key.indexOf('_')+1);
+                    }
+                    if(key.indexOf('captcha')===0)
+                    Option.header['x-captcha-token']=JSON.parse(temp).token
+                    if(key==='deviceid')
+                    Option.header['x-device-id'] = temp.substring(temp.indexOf('.')+1,32+temp.indexOf('.')+1)
+                }
             },
             finallyFunc(){
                 tools.putFileInWebdav('Playlist.m3u', m3u8File);
@@ -307,18 +310,18 @@
                 main.addClickEvent();
             },
             getselectFilesInfo() {
-                let temp = document.querySelector('div.node-list-table-view--2qFqi');
-                let selecteditem,dataSource;
-                for(let attr in temp){
+                let temp = document.querySelectorAll('div[data-index]')
+                let attrName;
+                for(let attr in temp[0]){
                     if(attr.indexOf('__reactFiber')==0){
-                        selecteditem = temp[attr].return.pendingProps.value.selectedKeys;
-                        dataSource = temp[attr].return.pendingProps.value.dataSource;
+                        attrName = attr;
                         break;
                     }
                 }
-                dataSource.forEach((value)=>{
-                    if(selecteditem.indexOf(value.fileId)>=0){
-                        aliyun._pushItem(value);
+                temp.forEach((item)=>{
+                    if(item.querySelector('input').checked){
+                        let value = item[attrName].return.pendingProps;
+                        aliyun._pushItem(value.data[value.index]||value.data[value.rowIndex][value.columnIndex]);
                     }
                 })
                 
@@ -396,7 +399,7 @@
         others = {
             hostname() {
                 flag ='others' ;
-                tempPath='/'+this._tempPath().match(/[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.?/)[0].replace('www.','')
+                tempPath='/'+location.hostname.replace('www.','')
                 itemsInfo=[];
                 const oriXSend = XMLHttpRequest.prototype.send;
 
@@ -431,30 +434,29 @@
                     others._getHtmlMenu();
                 }
             },
-            _getHtmlMenu(){
-                if(this._onceEnough)return
+            _getHtmlMenu() {
+                if (this._onceEnough) return
                 GM_registerMenuCommand('转存页面m3u文件', () => {
                     if (itemsInfo.length === 0) {
                         bleu.swalInfo(`❌没有加载m3u文件,等一会再尝试!`, 3000, 'center')
                         return;
                     }
-                    itemsInfo.forEach((item,index) => {
-                        m3u8File += `\n#EXTINF:-1 ,${document.title}_${index}\n#EXTVLCOPT:http-referrer=${this._referrer()}\n${decodeURIComponent(item)}`;
-                    })
                     bleu.swalUI('转存页面m3u文件', this._html(), '550px')
                     document.querySelector('#saveas').addEventListener('click', async () => {
                         await tools.addDavDir();
-                        tools.putFileInWebdav(document.querySelector('#bleu_name').value + '.m3u', m3u8File);
+                        let tempname = document.querySelector('#bleu_name').value
+                        let isreferrer = document.querySelector('#bleu_ref').checked?document.referrer:'';
+                        itemsInfo.forEach((item, index) => {
+                            m3u8File += `\n#EXTINF:-1 ,${tempname}_${index}\n#EXTVLCOPT:http-referrer=${isreferrer}\n${decodeURIComponent(item)}`;
+                        })
+                        tools.putFileInWebdav(tempname + '.m3u', m3u8File);
                     })
                 }, 'm');
                 this._onceEnough = true;
             },
             _onceEnough:false,
             _watchM3u:true,
-            _oriUrl:location.ancestorOrigins[location.ancestorOrigins.length-1]||undefined,
-            _referrer(){return this._oriUrl||location.origin},
-            _tempPath(){return this._oriUrl&&others._oriUrl||location.host},
-            _html(){return `<div><input type="text" id="bleu_name" class="bleuc_inp" value="${document.title}" style="width: 400px"/><label style="font-size: 15px">.m3u</label><span id="saveas" class="bleuc_config_item" style="margin: 10px;border-radius: 3px;color: #000;">转存</span></div>`},
+            _html(){return `<div><input type="text" id="bleu_name" class="bleuc_inp" value="${document.title}" style="width: 400px"/><label style="font-size: 15px">.m3u</label><span id="saveas" class="bleuc_config_item" style="margin: 10px;border-radius: 3px;color: #000;">转存</span></div><input type="checkbox" id="bleu_ref" checked></input><label>包含referrer</label>`},
         },
         main = {
             init() {
