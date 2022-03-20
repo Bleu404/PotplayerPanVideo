@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer播放云盘视频
 // @namespace    https://greasyfork.org/zh-CN/users/798733-bleu
-// @version      1.1.2
+// @version      1.1.3
 // @description  支持🐱‍💻百度网盘(1080p)、🐱‍👤迅雷云盘(720p)、🐱‍🏍阿里云盘(1080p)👉右键👈导入播放信息到webdav网盘；支持劫持自定义匹配网站的m3u文件导入webdav网盘。PotPlayer实现🥇倍速、🏆无边框、更换解码器、渲染器等功能。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -336,7 +336,7 @@
                     },
                     header = {
                         'x-canary': 'client=web,app=adrive,version=v2.4.0',
-                        'x-device-id': document.cookie.match(/cna=([^;]*)/)[1],
+                        //'x-device-id': document.cookie.match(/cna=([^;]*)/)[1],
                         authorization: `${token.token_type} ${token.access_token}`
                     };
                 await bleu.XHR('POST', url, JSON.stringify(data), header).then((res) => {
@@ -358,7 +358,7 @@
                     },
                     header = {
                         'x-canary': 'client=web,app=adrive,version=v2.4.0',
-                        'x-device-id': document.cookie.match(/cna=([^;]*)/)[1],
+                        //'x-device-id': document.cookie.match(/cna=([^;]*)/)[1],
                         authorization: `${token.token_type} ${token.access_token}`
                     };
                 await bleu.XHR('POST', url, JSON.stringify(data),header).then((res) => {
