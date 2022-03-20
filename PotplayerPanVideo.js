@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer播放云盘视频
 // @namespace    https://greasyfork.org/zh-CN/users/798733-bleu
-// @version      1.1.1
+// @version      1.1.2
 // @description  支持🐱‍💻百度网盘(1080p)、🐱‍👤迅雷云盘(720p)、🐱‍🏍阿里云盘(1080p)👉右键👈导入播放信息到webdav网盘；支持劫持自定义匹配网站的m3u文件导入webdav网盘。PotPlayer实现🥇倍速、🏆无边框、更换解码器、渲染器等功能。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -32,8 +32,8 @@
         flag,Option,observer,
         isCheckWebdav = true,
         m3u8File = "#EXTM3U",
-        flieTypeStr = ".wmv,.rmvb,.avi,.mp4,.mkv,.flv,.swf.mpeg4,.mpeg2,.3gp,.mpga,.qt,.rm,.wmz,.wmd,.wvx,.wmx,.wm,.mpg,.mpeg,mov,.asf,.m4v",
-        tools = {
+        flieTypeStr = ".wmv,.rmvb,.avi,.mp4,.mkv,.flv,.swf.mpeg4,.mpeg2,.3gp,.mpga,.qt,.rm,.wmz,.wmd,.wvx,.wmx,.wm,.mpg,.mpeg,mov,.asf,.m4v";
+    const tools = {
             runFunction(funcName, attrval) {
                 switch (document.domain) {
                     case 'pan.baidu.com':
@@ -51,28 +51,27 @@
                 return flieTypeStr.indexOf(`${type},`) > 0 ? true : false
             },
             async addDavDir(){
+                if(flag==='xunlei'||flag==='aliyun')return
+                await tools.checkPath();
+                await this._addDir(`https://${bleuc.cip}/PanPlaylist/${flag}${tempPath}`)
+            },
+            async _addDir(url){
                 let header = {
                     "authorization": `Basic ${btoa(`${bleuc.cun}:${bleuc.cpw}`)}`
                 }
-                if(flag==='xunlei'||flag==='aliyun')return
-                await tools.checkPath();
-                await bleu.XHR('MKCOL', `https://${bleuc.cip}/PanPlaylist/${flag}${tempPath}`, undefined, header, 'xml')
+                await bleu.XHR('PROPFIND', url, undefined, header, undefined).then(async(res) => {
+                    if (!(res.status>=200&&res.status<300)) {
+                        await bleu.XHR('MKCOL', url, undefined, header, undefined)
+                    }
+                })
             },
             async checkPath(){
-                let url = `https://${bleuc.cip}/PanPlaylist/${flag}/`,
-                    header = {
-                        "authorization": `Basic ${btoa(`${bleuc.cun}:${bleuc.cpw}`)}`
-                    }
+                let url = `https://${bleuc.cip}/PanPlaylist/`;
                 if (isCheckWebdav) {
                     isCheckWebdav = false;
-                    return await bleu.XHR('PROPFIND', url, undefined, header, 'xml').then(async(res) => {
-                        if (!(res.status>=200&&res.status<300)) {
-                            url = `https://${bleuc.cip}/PanPlaylist/`
-                            await bleu.XHR('MKCOL', url, undefined, header, 'xml')
-                            url = `https://${bleuc.cip}/PanPlaylist/${flag}/`
-                            await bleu.XHR('MKCOL', url, undefined, header, 'xml')
-                        }
-                    })
+                    await this._addDir(url);
+                    url = `https://${bleuc.cip}/PanPlaylist/${flag}/`
+                    await this._addDir(url);
                 }
             },
             async putFileInWebdav(name, info) {
@@ -119,15 +118,15 @@
                 <div><label>用户:</label><input type="text" class="bleuc_inp" id="cun" value="${bleuc.cun}"/></div>
                 <div><label>密码:</label><input type="text" class="bleuc_inp" id="cpw" value="${bleuc.cpw}"/></div></p></div>
                 <div class="bleuc_config_item"><b>画质</b><p>
-                <label>百度：</label><select class="bleuc_sel" id="cbdqs">
+                <label>百度网盘：</label><select class="bleuc_sel" id="cbdqs">
                 <option value="bd1080">1080p</option>
                 <option value="bd720">720p</option>
                 <option value="bd480">480p</option>
                 <option value="bd360">360p</option></select>
-                <label>迅雷：</label><select class="bleuc_sel" id="cxlqs">
+                <label>迅雷云盘：</label><select class="bleuc_sel" id="cxlqs">
                 <option value="xl0">从高到低</option>
                 <option value="xl1">从低到高</option></select>
-                <label>阿里：</label><select class="bleuc_sel" id="calqs">
+                <label>阿里云盘：</label><select class="bleuc_sel" id="calqs">
                 <option value="FHD">1080p</option>
                 <option value="HD">720p</option>
                 <option value="SD">540p</option>
@@ -143,10 +142,10 @@
             .bleuc_config_item label{font-size: 15px}
             .bleuc_config_item input.bleuc_inp{margin: 0px 10px;font-size: 15px;background: linear-gradient(45deg,#12c2e9, #c471ed, #f64f59);border-style:none;color:black;width:200px}
             .bleuc_config_item p{text-align: left;margin: 0px 20px;}
-            .bleuc_sel{margin: 0px 10px;background: linear-gradient(45deg,#12c2e9, #c471ed, #f64f59);font-size: 15px;border: none;color:black;width:250px}`,
+            .bleuc_sel{margin: 0px 10px;background: linear-gradient(45deg,#12c2e9, #c471ed, #f64f59);font-size: 15px;border: none;color:black;width:160px}`,
 
-        },
-        baidu = {
+        }
+    const baidu = {
             hostname(){
                 flag =  'baidu';
             },
@@ -214,8 +213,8 @@
                 });
             },
             finallyFunc(){}
-        },
-        xunlei = {
+        }
+    const xunlei = {
             hostname(){
                 flag =  'xunlei'
             },
@@ -297,8 +296,8 @@
             finallyFunc(){
                 tools.putFileInWebdav('Playlist.m3u', m3u8File);
             }
-        },
-        aliyun = {
+        }
+    const aliyun = {
             hostname(){
                 flag =  'aliyun'
             },
@@ -395,8 +394,8 @@
             finallyFunc(){
                 tools.putFileInWebdav('Playlist.m3u', m3u8File);
             }
-        },
-        others = {
+        }
+    const others = {
             hostname() {
                 flag ='others' ;
                 tempPath='/'+location.hostname.replace('www.','')
@@ -443,22 +442,27 @@
                     }
                     bleu.swalUI('转存页面m3u文件', this._html(), '550px')
                     document.querySelector('#saveas').addEventListener('click', async () => {
-                        await tools.addDavDir();
+                        m3u8File = "#EXTM3U";
+                        if(!this._direxit){
+                            await tools.addDavDir();
+                            this._direxit=true;
+                        }
                         let tempname = document.querySelector('#bleu_name').value
                         let isreferrer = document.querySelector('#bleu_ref').checked?document.referrer:'';
                         itemsInfo.forEach((item, index) => {
                             m3u8File += `\n#EXTINF:-1 ,${tempname}_${index}\n#EXTVLCOPT:http-referrer=${isreferrer}\n${decodeURIComponent(item)}`;
                         })
-                        tools.putFileInWebdav(tempname + '.m3u', m3u8File);
+                        await tools.putFileInWebdav(tempname + '.m3u', m3u8File);
                     })
                 }, 'm');
                 this._onceEnough = true;
             },
+            _direxit:false,
             _onceEnough:false,
             _watchM3u:true,
             _html(){return `<div><input type="text" id="bleu_name" class="bleuc_inp" value="${document.title}" style="width: 400px"/><label style="font-size: 15px">.m3u</label><span id="saveas" class="bleuc_config_item" style="margin: 10px;border-radius: 3px;color: #000;">转存</span></div><input type="checkbox" id="bleu_ref" checked></input><label>包含referrer</label>`},
-        },
-        main = {
+        }
+    const main = {
             init() {
                 observer = new MutationObserver(function (mutations) {
                     for (let mutation of mutations) {
