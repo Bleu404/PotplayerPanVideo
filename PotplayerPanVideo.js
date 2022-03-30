@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer播放云盘视频
 // @namespace    https://greasyfork.org/zh-CN/users/798733-bleu
-// @version      1.1.3
+// @version      1.1.4
 // @description  支持🐱‍💻百度网盘(1080p)、🐱‍👤迅雷云盘(720p)、🐱‍🏍阿里云盘(1080p)👉右键👈导入播放信息到webdav网盘；支持劫持自定义匹配网站的m3u文件导入webdav网盘。PotPlayer实现🥇倍速、🏆无边框、更换解码器、渲染器等功能。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -212,7 +212,7 @@
                     itemsInfo[arryIndex].push(itemInfo);
                 });
             },
-            finallyFunc(){}
+            finallyFunc(){unsafeWindow.location.href = `potplayer://`;}
         }
     const xunlei = {
             hostname(){
@@ -293,8 +293,9 @@
                     Option.header['x-device-id'] = temp.substring(temp.indexOf('.')+1,32+temp.indexOf('.')+1)
                 }
             },
-            finallyFunc(){
-                tools.putFileInWebdav('Playlist.m3u', m3u8File);
+            async finallyFunc(){
+                await tools.putFileInWebdav('Playlist.m3u', m3u8File);
+                unsafeWindow.location.href = `potplayer://https://${encodeURIComponent(bleuc.cun)}:${bleuc.cpw}@${bleuc.cip}/PanPlaylist/xunlei/Playlist.m3u`;
             }
         }
     const aliyun = {
@@ -391,8 +392,9 @@
                 };
                 itemsInfo[arryIndex].push(itemInfo);
             },
-            finallyFunc(){
-                tools.putFileInWebdav('Playlist.m3u', m3u8File);
+            async finallyFunc(){
+                await tools.putFileInWebdav('Playlist.m3u', m3u8File);
+                unsafeWindow.location.href = `potplayer://https://${encodeURIComponent(bleuc.cun)}:${bleuc.cpw}@${bleuc.cip}/PanPlaylist/aliyun/Playlist.m3u`;
             }
         }
     const others = {
@@ -453,6 +455,7 @@
                             m3u8File += `\n#EXTINF:-1 ,${tempname}_${index}\n#EXTVLCOPT:http-referrer=${isreferrer}\n${decodeURIComponent(item)}`;
                         })
                         await tools.putFileInWebdav(tempname + '.m3u', m3u8File);
+                        unsafeWindow.location.href = `potplayer://https://${encodeURIComponent(bleuc.cun)}:${bleuc.cpw}@${bleuc.cip}/PanPlaylist/others/${location.hostname.replace('www.','')}/${tempname}.m3u`;
                     })
                 }, 'm');
                 this._onceEnough = true;
@@ -460,7 +463,7 @@
             _direxit:false,
             _onceEnough:false,
             _watchM3u:true,
-            _html(){return `<div><input type="text" id="bleu_name" class="bleuc_inp" value="${document.title}" style="width: 400px"/><label style="font-size: 15px">.m3u</label><span id="saveas" class="bleuc_config_item" style="margin: 10px;border-radius: 3px;color: #000;">转存</span></div><input type="checkbox" id="bleu_ref" checked></input><label>包含referrer</label>`},
+            _html(){return `<div><input type="text" id="bleu_name" class="bleuc_inp" value="${document.title}" style="width: 400px"/><label style="font-size: 15px">.m3u</label><span id="saveas" class="bleuc_config_item" style="margin: 10px;border-radius: 3px;color: #000;">转存</span></div><input type="checkbox" id="bleu_ref"></input><label>包含referrer</label>`},
         }
     const main = {
             init() {
