@@ -1,5 +1,16 @@
 # PotplayerPanVideo
 
+|百度网盘| 迅雷云盘|阿里云盘|
+|:---|:----|:---|
+|🌕1080p|🌔720p|🌕1080p|
+|🌔需配置potplayer|🌕可配置potplayer|🌕可配置potplayer|
+|🌔时限中等|🌕时限最长|🌒时限最短|
+|🌕nplayer|🌕nplayer|🌑nplayer|
+
+## 迅雷云盘和阿里云盘
+
+跳转到新脚本，体验更好[PotPlayer云盘-专供版](https://github.com/Bleu404/PotplayerPanVideoSV/)
+
 ## 📢使用前，准备事项📢
 
 <div style="background-color:#12c2e9">1.注册附带webdav的网盘（坚果云、TeraCLOUD等），</div>
@@ -10,11 +21,16 @@
 2️⃣、配置中的密码不是登陆密码，是授权第三方应用的密码，坚果云的 <a href="https://help.jianguoyun.com/?p=2064" rel="nofollow">开启方法</a>;
 <a href="https://teracloud.jp/en/modules/mypage/usage/">TeraClOUD的mypage</a>，中找到Apps Connection，保存好密码，不然下一次要重置
 3️⃣、PotPlayer下载<a href="https://bleu.lanzouj.com/iWdnrz59yha">蓝奏云： https://bleu.lanzouj.com/iWdnrz59yha</a> 密码:4xke
+    nPlayer安卓破解版<a href="https://bleu.lanzouj.com/ioczh01n0hqd">蓝奏云：https://bleu.lanzouj.com/ioczh01n0hqd</a>  密码:705r
 </pre>
+
+## 📖视频使用教程📖
+
+[ACFUN-PotPlayer播放云盘视频](https://www.acfun.cn/v/ac34091426)
 
 ## ⚙配置脚本⚙
 
-<img src='https://s3.bmp.ovh/imgs/2022/03/5350a1d8a6029b4e.png' width="300px" height="230px" /><br>
+<img src='https://cdn.jsdelivr.net/gh/Bleu404/PRPO@1.0.0/ppv/webdav配置.png' width="300px" height="230px" /><br>
 ***上图是以坚果云为例，填写的脚本WEBDAV画质配置***  
 
 ## ⚙配置PotPlayer专辑⚙
@@ -23,7 +39,7 @@
 >***1.画质尽量选择1080p或者720p***  
 ***2.选择Wbdav协议，其他复制脚本配置即可,如果使用TeraCLOUD,勾选ssl选项***  
 ***3.选择PanPlaylist文件夹，就可以看到baidu***  
-<img src='https://s3.bmp.ovh/imgs/2022/03/fa8aa0ec5b55f629.png' width="350px" height="500px" /><img src='https://s3.bmp.ovh/imgs/2022/03/294d9e0cc65754a6.png' width="350px" height="500px"/>
+<img src='https://cdn.jsdelivr.net/gh/Bleu404/PRPO@1.0.0/ppv/百度专辑配置.png' width="400px" height="500px" /><img src='https://cdn.jsdelivr.net/gh/Bleu404/PRPO@1.0.0/ppv/百度专辑配置-ssl.png' width="400px" height="500px"/>
 
 **<div style="background-color:#12c2e9">====👇迅雷云盘👇====</div>**
 >***网页版迅雷云盘对有些视频解码不到位。所以用webdav协议，很多视频不能观看  
@@ -46,11 +62,11 @@
 **<div style="background-color:#12c2e9">====👇自定义网站👇====</div>**
 ><b style="background-color:#c471ed">主要是解决小型网站的播放器不太好用的问题</b>
 >可以在脚本设置页面，添加自定义网站，如下图，记得加`*`  
-<img src = 'https://s3.bmp.ovh/imgs/2022/03/6910b5e4fe920657.png' width="800px" height="500px" />  
+<img src = 'https://cdn.jsdelivr.net/gh/Bleu404/PRPO@1.0.0/ppv/自定义匹配.png' width="800px" height="500px" />  
 <b style="background-color:#c471ed">如果嫌麻烦，也可以添加全匹配，代码中加  `// @include        *://*`</b>  
 
 >**1️⃣、脚本管理器有‘转存页面m3u文件’按钮**  
-<img src = 'https://s3.bmp.ovh/imgs/2022/03/7721ee5be99f0d9c.png' width="300px" height="400px" />  
+<img src = 'https://cdn.jsdelivr.net/gh/Bleu404/PRPO@1.0.0/ppv/转存页面m3u文件.png' width="300px" height="200px" />  
 
 >**2️⃣、webdav会生成一个.m3u文件用法：**  
 >>
