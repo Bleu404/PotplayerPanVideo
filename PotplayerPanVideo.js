@@ -11,7 +11,7 @@
 // @match        https://pan.baidu.com/*
 // @match        https://pan.xunlei.com/*
 // @match        https://www.aliyundrive.com/*
-// @icon         https://img.icons8.com/ios/50/000000/cloud-mail.png
+// @icon         https://cdn.jsdelivr.net/gh/Bleu404/PRPO@latest/png/ppv.png
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_xmlhttpRequest
@@ -152,8 +152,8 @@
             addTag(isnew) {
                 if (contextMenu.firstChild.innerText.match(/转存播放信息|查看/)) return
                 let ul = document.createElement('ul');
-                isnew?ul.innerHTML = `<div id="bleuReSave" class="wp-ctx-menu__item cursor-p is-has-icon"><p><img src="https://img.icons8.com/ios-filled/15/000000/cloud-mail.png"/><span class="wp-ctx-menu__item-text">转存播放信息</span></p></div>`
-                :ul.innerHTML = `<li id="bleuReSave"><em class="icon"><img src="https://img.icons8.com/ios-filled/15/000000/cloud-mail.png"/></em>转存播放信息</li>`;
+                isnew?ul.innerHTML = `<div id="bleuReSave" class="wp-ctx-menu__item cursor-p is-has-icon"><p><img src="https://cdn.jsdelivr.net/gh/Bleu404/PRPO@latest/png/ppv16.png"/><span class="wp-ctx-menu__item-text">转存播放信息</span></p></div>`
+                :ul.innerHTML = `<li id="bleuReSave"><em class="icon"><img src="https://cdn.jsdelivr.net/gh/Bleu404/PRPO@latest/png/ppv16.png"/></em>转存播放信息</li>`;
                 contextMenu.firstChild.prepend(ul.firstChild);
                 main.addClickEvent();
             },
@@ -437,28 +437,36 @@
             },
             _getHtmlMenu() {
                 if (this._onceEnough) return
-                GM_registerMenuCommand('转存页面m3u文件', () => {
-                    if (itemsInfo.length === 0) {
-                        bleu.swalInfo(`❌没有加载m3u文件,等一会再尝试!`, 3000, 'center')
-                        return;
+                GM_registerMenuCommand('转存页面m3u文件',()=>{this._saveas()}, 'm');
+                document.addEventListener("keydown", (e)=>{
+                    if (e.key == "x" && e.altKey) {
+                        this._saveas()
                     }
-                    bleu.swalUI('转存页面m3u文件', this._html(), '550px')
-                    document.querySelector('#saveas').addEventListener('click', async () => {
-                        m3u8File = "#EXTM3U";
-                        if(!this._direxit){
-                            await tools.addDavDir();
-                            this._direxit=true;
-                        }
-                        let tempname = document.querySelector('#bleu_name').value
-                        let isreferrer = document.querySelector('#bleu_ref').checked?document.referrer:'';
-                        itemsInfo.forEach((item, index) => {
-                            m3u8File += `\n#EXTINF:-1 ,${tempname}_${index}\n#EXTVLCOPT:http-referrer=${isreferrer}\n${decodeURIComponent(item)}`;
-                        })
-                        await tools.putFileInWebdav(tempname + '.m3u', m3u8File);
-                        unsafeWindow.location.href = `potplayer://https://${encodeURIComponent(bleuc.cun)}:${bleuc.cpw}@${bleuc.cip}/PanPlaylist/others/${location.hostname.replace('www.','')}/${tempname}.m3u`;
-                    })
-                }, 'm');
+                })
                 this._onceEnough = true;
+            },
+            _saveas(){
+                if (itemsInfo.length === 0) {
+                    bleu.swalInfo(`❌没有加载m3u文件,等一会再尝试!`, 3000, 'center')
+                    return;
+                }
+                bleu.swalUI('转存页面m3u文件', this._html(), '550px')
+                document.querySelector('#bleu_name').select();
+                document.querySelector('#bleu_name').focus();
+                document.querySelector('#saveas').addEventListener('click', async () => {
+                    m3u8File = "#EXTM3U";
+                    if(!this._direxit){
+                        await tools.addDavDir();
+                        this._direxit=true;
+                    }
+                    let tempname = document.querySelector('#bleu_name').value
+                    let isreferrer = document.querySelector('#bleu_ref').checked?document.referrer:'';
+                    itemsInfo.forEach((item, index) => {
+                        m3u8File += `\n#EXTINF:-1 ,${tempname}_${index}\n#EXTVLCOPT:http-referrer=${isreferrer}\n${decodeURIComponent(item)}`;
+                    })
+                    await tools.putFileInWebdav(tempname + '.m3u', m3u8File);
+                    unsafeWindow.location.href = `potplayer://https://${encodeURIComponent(bleuc.cun)}:${bleuc.cpw}@${bleuc.cip}/PanPlaylist/others/${location.hostname.replace('www.','')}/${tempname}.m3u`;
+                })
             },
             _direxit:false,
             _onceEnough:false,
