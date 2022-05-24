@@ -30,7 +30,7 @@
 
 ## ⚙配置脚本⚙
 
-<img src='https://cdn.jsdelivr.net/gh/Bleu404/PRPO@1.0.0/ppv/webdav配置.png' width="300px" height="230px" /><br>
+<img src='https://fastly.jsdelivr.net/gh/Bleu404/PRPO@main/ppv/webdav配置.png' width="300px" height="230px" /><br>
 ***上图是以坚果云为例，填写的脚本WEBDAV画质配置***  
 
 ## ⚙配置PotPlayer专辑⚙
@@ -39,7 +39,7 @@
 >***1.画质尽量选择1080p或者720p***  
 ***2.选择Wbdav协议，其他复制脚本配置即可,如果使用TeraCLOUD,勾选ssl选项***  
 ***3.选择PanPlaylist文件夹，就可以看到baidu***  
-<img src='https://cdn.jsdelivr.net/gh/Bleu404/PRPO@1.0.0/ppv/百度专辑配置.png' width="400px" height="500px" /><img src='https://cdn.jsdelivr.net/gh/Bleu404/PRPO@1.0.0/ppv/百度专辑配置-ssl.png' width="400px" height="500px"/>
+<img src='https://fastly.jsdelivr.net/gh/Bleu404/PRPO@main/ppv/百度专辑配置.png' width="400px" height="500px" /><img src='https://fastly.jsdelivr.net/gh/Bleu404/PRPO@main/ppv/百度专辑配置-ssl.png' width="400px" height="500px"/>
 
 **<div style="background-color:#12c2e9">====👇迅雷云盘👇====</div>**
 >***网页版迅雷云盘对有些视频解码不到位。所以用webdav协议，很多视频不能观看  
@@ -62,11 +62,11 @@
 **<div style="background-color:#12c2e9">====👇自定义网站👇====</div>**
 ><b style="background-color:#c471ed">主要是解决小型网站的播放器不太好用的问题</b>
 >可以在脚本设置页面，添加自定义网站，如下图，记得加`*`  
-<img src = 'https://cdn.jsdelivr.net/gh/Bleu404/PRPO@1.0.0/ppv/自定义匹配.png' width="800px" height="500px" />  
+<img src = 'https://fastly.jsdelivr.net/gh/Bleu404/PRPO@main/ppv/自定义匹配.png' width="800px" height="500px" />  
 <b style="background-color:#c471ed">如果嫌麻烦，也可以添加全匹配，代码中加  `// @include        *://*`</b>  
 
 >**1️⃣、脚本管理器有‘转存页面m3u文件’按钮**  
-<img src = 'https://cdn.jsdelivr.net/gh/Bleu404/PRPO@1.0.0/ppv/转存页面m3u文件.png' width="300px" height="200px" />  
+<img src = 'https://fastly.jsdelivr.net/gh/Bleu404/PRPO@main/ppv/转存页面m3u文件.png' width="300px" height="200px" />  
 
 >**2️⃣、webdav会生成一个.m3u文件用法：**  
 >>

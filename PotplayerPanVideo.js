@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer播放云盘视频
 // @namespace    https://greasyfork.org/zh-CN/users/798733-bleu
-// @version      1.1.5
+// @version      1.1.6
 // @description  支持🐱‍💻百度网盘(1080p)、🐱‍👤迅雷云盘(720p)、🐱‍🏍阿里云盘(1080p)👉右键👈导入播放信息到webdav网盘；支持劫持自定义匹配网站的m3u文件导入webdav网盘。PotPlayer实现🥇倍速、🏆无边框、更换解码器、渲染器等功能。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -11,7 +11,7 @@
 // @match        https://pan.baidu.com/*
 // @match        https://pan.xunlei.com/*
 // @match        https://www.aliyundrive.com/*
-// @icon         https://cdn.jsdelivr.net/gh/Bleu404/PRPO@latest/png/ppv.png
+// @icon         https://fastly.jsdelivr.net/gh/Bleu404/PRPO@latest/png/ppv.png
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_xmlhttpRequest
@@ -19,8 +19,8 @@
 // @grant        unsafeWindow
 // @connect      *
 // @run-at       document-body
-// @require      https://cdn.jsdelivr.net/npm/sweetalert2@11.1.0/dist/sweetalert2.all.min.js
-// @require      https://cdn.jsdelivr.net/npm/bleutools@1.0.1/bleutools.min.js
+// @require      https://fastly.jsdelivr.net/npm/sweetalert2@11.1.0/dist/sweetalert2.all.min.js
+// @require      https://fastly.jsdelivr.net/npm/bleutools@1.0.1/bleutools.min.js
 // ==/UserScript==
 (function () {
     'use strict';
@@ -152,8 +152,8 @@
             addTag(isnew) {
                 if (contextMenu.firstChild.innerText.match(/转存播放信息|查看/)) return
                 let ul = document.createElement('ul');
-                isnew?ul.innerHTML = `<div id="bleuReSave" class="wp-ctx-menu__item cursor-p is-has-icon"><p><img src="https://cdn.jsdelivr.net/gh/Bleu404/PRPO@latest/png/ppv16.png"/><span class="wp-ctx-menu__item-text">转存播放信息</span></p></div>`
-                :ul.innerHTML = `<li id="bleuReSave"><em class="icon"><img src="https://cdn.jsdelivr.net/gh/Bleu404/PRPO@latest/png/ppv16.png"/></em>转存播放信息</li>`;
+                isnew?ul.innerHTML = `<div id="bleuReSave" class="wp-ctx-menu__item cursor-p is-has-icon"><p><img src="https://fastly.jsdelivr.net/gh/Bleu404/PRPO@latest/png/ppv16.png"/><span class="wp-ctx-menu__item-text">转存播放信息</span></p></div>`
+                :ul.innerHTML = `<li id="bleuReSave"><em class="icon"><img src="https://fastly.jsdelivr.net/gh/Bleu404/PRPO@latest/png/ppv16.png"/></em>转存播放信息</li>`;
                 contextMenu.firstChild.prepend(ul.firstChild);
                 main.addClickEvent();
             },
@@ -164,7 +164,7 @@
                 baidu._pushItem(temp);
             },
             async updateFile(item) {
-                let streamUrl = `https://${location.host}/api/streaming?path=${encodeURIComponent(item.id)}&app_id=250528&clienttype=0&type=M3U8_AUTO_${bleuc.cbdqs.substring(2)}&vip=0&isplayer=0&check_blue=1`;
+                let streamUrl = `https://${location.host}/api/streaming?path=${encodeURIComponent(item.id)}&app_id=250528&clienttype=0&type=M3U8_AUTO_${bleuc.cbdqs.substring(2)}&vip=2&isplayer=0&check_blue=1`;
                 await bleu.XHR('GET', streamUrl, undefined, {
                     withCredentials: true
                 },'txt').then(async(res) => {
@@ -439,7 +439,7 @@
                 if (this._onceEnough) return
                 GM_registerMenuCommand('转存页面m3u文件',()=>{this._saveas()}, 'm');
                 document.addEventListener("keydown", (e)=>{
-                    if (e.key == "x" && e.altKey) {
+                    if (e.key == "z" && e.altKey) {
                         this._saveas()
                     }
                 })
