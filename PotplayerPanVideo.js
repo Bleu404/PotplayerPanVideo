@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer播放云盘视频
 // @namespace    https://greasyfork.org/zh-CN/users/798733-bleu
-// @version      1.1.6
+// @version      1.1.7
 // @description  支持🐱‍💻百度网盘(1080p)、🐱‍👤迅雷云盘(720p)、🐱‍🏍阿里云盘(1080p)👉右键👈导入播放信息到webdav网盘；支持劫持自定义匹配网站的m3u文件导入webdav网盘。PotPlayer实现🥇倍速、🏆无边框、更换解码器、渲染器等功能。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -148,19 +148,27 @@
     const baidu = {
             hostname(){
                 flag =  'baidu';
+                baidu._isNew = location.href.indexOf('/disk/main') > 0?true:false;
             },
-            addTag(isnew) {
+            addTag() {
                 if (contextMenu.firstChild.innerText.match(/转存播放信息|查看/)) return
                 let ul = document.createElement('ul');
-                isnew?ul.innerHTML = `<div id="bleuReSave" class="wp-ctx-menu__item cursor-p is-has-icon"><p><img src="https://fastly.jsdelivr.net/gh/Bleu404/PRPO@latest/png/ppv16.png"/><span class="wp-ctx-menu__item-text">转存播放信息</span></p></div>`
+                baidu._isNew?ul.innerHTML = `<div id="bleuReSave" class="wp-s-ctx-menu__item cursor-p is-has-icon"><p><img src="https://fastly.jsdelivr.net/gh/Bleu404/PRPO@latest/png/ppv16.png"/><span class="wp-s-ctx-menu__item-text">转存播放信息</span></p></div>`
                 :ul.innerHTML = `<li id="bleuReSave"><em class="icon"><img src="https://fastly.jsdelivr.net/gh/Bleu404/PRPO@latest/png/ppv16.png"/></em>转存播放信息</li>`;
                 contextMenu.firstChild.prepend(ul.firstChild);
                 main.addClickEvent();
             },
             getselectFilesInfo() {
-                let temp = location.href.indexOf('/disk/main') > 0?
-                document.querySelector('.nd-main-filelist.nd-main-list__table').__vue__.selectedList
-                :require('system-core:context/context.js').instanceForSystem.list.getSelected();
+                let temp;
+                if(baidu._isNew){
+                    temp = [];
+                    let collection = document.querySelector('.wp-s-pan-table__body.mouse-choose-list').__vue__.canSelectListMap;
+                    document.querySelectorAll('.wp-s-pan-table__body-row.mouse-choose-item.selected').forEach(i=>{
+                        temp.push(collection[i.getAttribute('data-id')].item);
+                    })
+                }else{
+                    temp = require('system-core:context/context.js').instanceForSystem.list.getSelected();
+                }
                 baidu._pushItem(temp);
             },
             async updateFile(item) {
@@ -184,20 +192,20 @@
                 })
             },
             findContext(node) {
-                if (location.href.indexOf('/disk/main') > 0) {
-                    node = document.querySelector('.ctx-menu-container.nd-main-filelist__menu.nd-common-float-menu')
-                    if (!node) return;
+                if (baidu._isNew) {
+                    node = document.querySelectorAll('.ctx-menu-container')[4];
+                    if (!(node&&node.querySelector('.wp-s-ctx-menu__item.cursor-p'))) return;
                     contextMenu = node;
-                    baidu.addTag(true);
+                    baidu.addTag();
                 }
                 else if(node.className ==='context-menu'){
                     observer.disconnect();
                     contextMenu = node;
-                    baidu.addTag(false);
+                    baidu.addTag();
                 }
             },
             closeMenu(){
-                if(location.href.indexOf('/disk/main') < 0)contextMenu.firstChild.style.display = "none"
+                if(baidu._isNew)contextMenu.firstChild.style.display = "none"
                 else contextMenu.style.display = "none"
             },
             _pushItem(temp) {
@@ -212,6 +220,9 @@
                     itemsInfo[arryIndex].push(itemInfo);
                 });
             },
+
+            _isNew:false,
+
             finallyFunc(){unsafeWindow.location.href = `potplayer://`;}
         }
     const xunlei = {
