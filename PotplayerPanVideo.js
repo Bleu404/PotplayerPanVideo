@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer播放云盘视频
 // @namespace    https://greasyfork.org/zh-CN/users/798733-bleu
-// @version      1.1.7
+// @version      1.1.8
 // @description  支持🐱‍💻百度网盘(1080p)、🐱‍👤迅雷云盘(720p)、🐱‍🏍阿里云盘(1080p)👉右键👈导入播放信息到webdav网盘；支持劫持自定义匹配网站的m3u文件导入webdav网盘。PotPlayer实现🥇倍速、🏆无边框、更换解码器、渲染器等功能。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -18,6 +18,10 @@
 // @grant        GM_registerMenuCommand
 // @grant        unsafeWindow
 // @connect      *
+// @connect      xunlei.com
+// @connect      aliyundrive.com
+// @connect      jianguoyun.com
+// @connect      teracloud.jp
 // @run-at       document-body
 // @require      https://fastly.jsdelivr.net/npm/sweetalert2@11.1.0/dist/sweetalert2.all.min.js
 // @require      https://fastly.jsdelivr.net/npm/bleutools@1.0.1/bleutools.min.js
