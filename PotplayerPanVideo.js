@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer播放云盘视频
 // @namespace    https://greasyfork.org/zh-CN/users/798733-bleu
-// @version      1.1.8
+// @version      1.1.9
 // @description  支持🐱‍💻百度网盘(1080p)、🐱‍👤迅雷云盘(720p)、🐱‍🏍阿里云盘(1080p)👉右键👈导入播放信息到webdav网盘；支持劫持自定义匹配网站的m3u文件导入webdav网盘。PotPlayer实现🥇倍速、🏆无边框、更换解码器、渲染器等功能。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -36,7 +36,7 @@
         flag,Option,observer,
         isCheckWebdav = true,
         m3u8File = "#EXTM3U",
-        flieTypeStr = ".wmv,.rmvb,.avi,.mp4,.mkv,.flv,.swf.mpeg4,.mpeg2,.3gp,.mpga,.qt,.rm,.wmz,.wmd,.wvx,.wmx,.wm,.mpg,.mpeg,mov,.asf,.m4v,";
+        flieTypeStr = ".wmv,.rmvb,.avi,.mp4,.mkv,.flv,.swf.mpeg4,.mpeg2,.3gp,.mpga,.qt,.rm,.wmz,.wmd,.wvx,.wmx,.wm,.mpg,.mpeg,mov,.asf,.m4v,.ts,";
     const tools = {
             runFunction(funcName, attrval) {
                 switch (document.domain) {
@@ -465,16 +465,20 @@
                     bleu.swalInfo(`❌没有加载m3u文件,等一会再尝试!`, 3000, 'center')
                     return;
                 }
-                bleu.swalUI('转存页面m3u文件', this._html(), '550px')
-                document.querySelector('#bleu_name').select();
-                document.querySelector('#bleu_name').focus();
+                bleu.swalUI('转存页面m3u文件', this._html(), '550px');
+                let nameIPT = document.querySelector('#bleu_name');
+                nameIPT.select();
+                nameIPT.focus();
+                nameIPT.addEventListener('keypress',(e)=>{
+                    e.keyCode == 13&&document.querySelector('#saveas').click();
+                })
                 document.querySelector('#saveas').addEventListener('click', async () => {
                     m3u8File = "#EXTM3U";
                     if(!this._direxit){
                         await tools.addDavDir();
                         this._direxit=true;
                     }
-                    let tempname = document.querySelector('#bleu_name').value
+                    let tempname = nameIPT.value
                     let isreferrer = document.querySelector('#bleu_ref').checked?document.referrer:'';
                     itemsInfo.forEach((item, index) => {
                         m3u8File += `\n#EXTINF:-1 ,${tempname}_${index}\n#EXTVLCOPT:http-referrer=${isreferrer}\n${decodeURIComponent(item)}`;
