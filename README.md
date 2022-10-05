@@ -11,6 +11,8 @@
 
 跳转到新脚本，体验更好[PotPlayer云盘-专供版](https://github.com/Bleu404/PotplayerPanVideoSV/)
 
+**没有网盘，或是不想用网盘，只想在线看视频，跳转到[Github_PotplayerM3U8](https://github.com/Bleu404/PotplayerM3U8)**
+
 ## 📢使用前，准备事项📢
 
 <div style="background-color:#12c2e9">1.注册附带webdav的网盘（坚果云、TeraCLOUD等），</div>
