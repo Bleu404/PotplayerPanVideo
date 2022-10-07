@@ -1,14 +1,15 @@
 // ==UserScript==
 // @name         PotPlayer播放云盘视频
 // @namespace    https://greasyfork.org/zh-CN/users/798733-bleu
-// @version      1.2.1
+// @version      1.2.2
 // @description  支持🐱‍💻百度网盘(720p)、🐱‍👤迅雷云盘(720p)、🐱‍🏍阿里云盘(1080p)👉右键👈导入播放信息到webdav网盘；支持劫持自定义匹配网站的m3u文件导入webdav网盘。PotPlayer实现🥇倍速、🏆无边框、更换解码器、渲染器等功能。
 // @author       bleu
 // @compatible   edge Tampermonkey
 // @compatible   chrome Tampermonkey
 // @compatible   firefox Tampermonkey
 // @license      MIT
-// @match        https://pan.baidu.com/*
+// @match        http*://pan.baidu.com/*
+// @match        http*://yun.baidu.com/*
 // @match        https://pan.xunlei.com/*
 // @match        https://www.aliyundrive.com/*
 // @icon         https://fastly.jsdelivr.net/gh/Bleu404/PRPO@latest/png/ppv.png
@@ -41,6 +42,8 @@
             runFunction(funcName, attrval) {
                 switch (document.domain) {
                     case 'pan.baidu.com':
+                        return  baidu[funcName](attrval);
+                    case 'yun.baidu.com':
                         return  baidu[funcName](attrval);
                     case 'xunlei.com':
                         return xunlei[funcName](attrval);

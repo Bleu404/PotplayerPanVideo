@@ -65,7 +65,7 @@
 ><b style="background-color:#c471ed">主要是解决小型网站的播放器不太好用的问题</b>
 >可以在脚本设置页面，添加自定义网站，如下图，记得加`*`  
 <img src = 'https://fastly.jsdelivr.net/gh/Bleu404/PRPO@main/ppv/自定义匹配.png' width="800px" height="500px" />  
-<b style="background-color:#c471ed">如果嫌麻烦，也可以添加全匹配，代码中加  `// @include        *://*`</b>  
+<b style="background-color:#c471ed">如果嫌麻烦，也可以添加全匹配，代码中加  `// @match        *://*/*`</b>  
 
 >**1️⃣、脚本管理器有‘转存页面m3u文件’按钮**  
 <img src = 'https://fastly.jsdelivr.net/gh/Bleu404/PRPO@main/ppv/转存页面m3u文件.png' width="300px" height="200px" />  
