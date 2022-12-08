@@ -22,8 +22,8 @@
 1️⃣、<a href="https://teracloud.jp/en/">TeraCLOUD</a>原始10g空间，用我的推荐码：<strong style="color:red;font-size: 30px;">DDGYA</strong>，可额外获得5g
 2️⃣、配置中的密码不是登陆密码，是授权第三方应用的密码，坚果云的 <a href="https://help.jianguoyun.com/?p=2064" rel="nofollow">开启方法</a>;
 <a href="https://teracloud.jp/en/modules/mypage/usage/">TeraClOUD的mypage</a>，中找到Apps Connection，保存好密码，不然下一次要重置
-3️⃣、PotPlayer下载<a href="https://bleu.lanzouj.com/iFZgu07w69vg">蓝奏云： https://bleu.lanzouj.com/iFZgu07w69vg</a> 密码:3mk7
-    nPlayer安卓破解版<a href="https://bleu.lanzouj.com/ioczh01n0hqd">蓝奏云：https://bleu.lanzouj.com/ioczh01n0hqd</a>  密码:705r
+3️⃣、PotPlayer下载<a href="https://bleu.lanzoue.com/iFZgu07w69vg">蓝奏云： https://bleu.lanzoue.com/iFZgu07w69vg</a> 密码:3mk7
+    nPlayer安卓破解版<a href="https://bleu.lanzoue.com/ioczh01n0hqd">蓝奏云：https://bleu.lanzoue.com/ioczh01n0hqd</a>  密码:705r
 </pre>
 
 ## 📖视频使用教程📖
