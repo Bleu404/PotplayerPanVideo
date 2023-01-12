@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer播放云盘视频
 // @namespace    https://greasyfork.org/zh-CN/users/798733-bleu
-// @version      1.2.2
+// @version      1.2.3
 // @description  支持🐱‍💻百度网盘(720p)、🐱‍👤迅雷云盘(720p)、🐱‍🏍阿里云盘(1080p)👉右键👈导入播放信息到webdav网盘；支持劫持自定义匹配网站的m3u文件导入webdav网盘。PotPlayer实现🥇倍速、🏆无边框、更换解码器、渲染器等功能。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -25,7 +25,7 @@
 // @connect      teracloud.jp
 // @run-at       document-body
 // @require      https://fastly.jsdelivr.net/npm/sweetalert2@11.1.0/dist/sweetalert2.all.min.js
-// @require      https://fastly.jsdelivr.net/npm/bleutools@1.0.1/bleutools.min.js
+// @require      https://fastly.jsdelivr.net/npm/bleutools@1.0.2/bleutools.min.js
 // ==/UserScript==
 (function () {
     'use strict';
@@ -34,28 +34,32 @@
         itemsInfo,
         arryIndex,
         tempPath,
-        flag,Option,observer,
+        flag,Option,observer,cloud,
         isCheckWebdav = true,
         m3u8File = "#EXTM3U",
         flieTypeStr = ".wmv,.rmvb,.avi,.mp4,.mkv,.flv,.swf.mpeg4,.mpeg2,.3gp,.mpga,.qt,.rm,.wmz,.wmd,.wvx,.wmx,.wm,.mpg,.mpeg,mov,.asf,.m4v,.ts,";
     const tools = {
-            runFunction(funcName, attrval) {
+            getCloudName() {
                 switch (document.domain) {
                     case 'pan.baidu.com':
-                        return  baidu[funcName](attrval);
+                        cloud = baidu;
+                        break;
                     case 'yun.baidu.com':
-                        return  baidu[funcName](attrval);
+                        cloud =  baidu;
+                        break;
                     case 'xunlei.com':
-                        return xunlei[funcName](attrval);
+                        cloud = xunlei;
+                        break;
                     case 'www.aliyundrive.com':
-                        return aliyun[funcName](attrval);
+                        cloud = aliyun;
+                        break;
                     default:
-                        return others[funcName](attrval);
+                        cloud = others;
                 }
             },
             checkFileType(name) {
                 let type = name.toLowerCase().substring(name.lastIndexOf('.'))||"bleu"
-                return flieTypeStr.indexOf(`${type},`) > 0 ? true : false
+                return flieTypeStr.indexOf(`${type},`) >= 0 ? true : false
             },
             async addDavDir(){
                 if(flag==='xunlei'||flag==='aliyun')return
@@ -66,10 +70,9 @@
                 let header = {
                     "authorization": `Basic ${btoa(`${bleuc.cun}:${bleuc.cpw}`)}`
                 }
-                await bleu.XHR('PROPFIND', url, undefined, header, undefined).then(async(res) => {
-                    if (!(res.status>=200&&res.status<300)) {
-                        await bleu.XHR('MKCOL', url, undefined, header, undefined)
-                    }
+                await bleu.XHR('PROPFIND', url, undefined, header, undefined).then(async() => {
+                }, async() => {
+                    await bleu.XHR('MKCOL', url, undefined, header, undefined);
                 })
             },
             async checkPath(){
@@ -88,18 +91,13 @@
                 if(info === '#EXTM3U')return
                 await tools.checkPath();
                 await bleu.XHR('PUT', `https://${bleuc.cip}/PanPlaylist/${flag}${tempPath}/${name}`, info, header, 'xml').then((res) => {
-                    res.status>=200&&res.status<300?bleu.swalInfo(`✅${name}`, 3000, 'center'):
-                    bleu.swalInfo(`❌${name}`, 3000, 'center');
-                }, () => bleu.swalInfo(`❌${name}`, 3000, 'center'))
+                    bleu.swalInfo(`✅${name}`, 3000, 'center');
+                }, () => bleu.swalInfo(`❌${name}`, 3000, 'center'));
             },
             checkConfig(){
                 bleuc = JSON.parse(GM_getValue('bleuc')||null)||{cip:'',cun:'',cpw:'',cbdqs:'bd1080',cxlqs:'xl0',calqs:'FHD'}
                 if(!(bleuc.cip!=''&&bleuc.cun!=''&&bleuc.cpw!='')){
                     bleu.swalInfo(`❗请先设置WEBDAV画质`, '', 'center')
-                    return false
-                }
-                if(location.href.indexOf('/s/')>0){
-                    bleu.swalInfo(`❗不支持此页面,请先保存到云盘`, '', 'center')
                     return false
                 }
                 return true
@@ -183,10 +181,9 @@
                 await bleu.XHR('GET', streamUrl, undefined, {
                     withCredentials: true
                 },'txt').then(async(res) => {
-                    res.status>=200&&res.status<300 ?await tools.putFileInWebdav(item.name, res.response):
-                    bleu.swalInfo(`❌${item.name}`, 3000, 'center') ;
+                    await tools.putFileInWebdav(item.name, res);
                 }, () => {
-                    bleu.swalInfo("🔴💬获取文件信息出错", 3000, 'center')
+                    bleu.swalInfo(`❌${item.name}`, 3000, 'center') ;
                 })
             },
             async openNextDir(item) {
@@ -195,7 +192,7 @@
                     withCredentials: true
                 }).then((res) => {
                     arryIndex++;
-                    baidu._pushItem(res.response.list);
+                    baidu._pushItem(res.list);
                 })
             },
             findContext(node) {
@@ -252,26 +249,26 @@
             async updateFile(item) {
                 let url = `https://api-pan.xunlei.com/drive/v1/files/${item.id}`;
                 await bleu.XHR('GET', url, undefined,Option.header).then((res) => {
-                    if(!(res.status>=200&&res.status<300)){bleu.swalInfo("🔴💬刷新页面，重新获取header", '', 'center')}
                     let temp=[];
-                    res.response.medias.forEach((item)=>{
+                    res.medias.forEach((item)=>{
                         if (item.link != null) {
-                            temp.push(item.media_name === '原始画质' ? res.response.web_content_link : item.link.url)}
+                            temp.push(item.media_name === '原始画质' ? res.web_content_link : item.link.url)}
                     })
                     url = bleuc.cxlqs === 'xl0'?temp[0]:temp[temp.length-1];
                     m3u8File=m3u8File.replace('#EXTM3U',`#EXTM3U\n#EXTINF:-1 ,${item.name}\n${url}`)
                 }, () => {
-                    bleu.swalInfo("🔴💬刷新页面，重新获取header", '', 'center')
+                    bleu.swalInfo("❗进出目录之后重新转存", '', 'center')
                 })
             },
             async openNextDir(item) {
                 let url  = `https://api-pan.xunlei.com/drive/v1/files?limit=100&parent_id=${item.id}&filters={"phase":{"eq":"PHASE_TYPE_COMPLETE"},"trashed":{"eq":false}}&with_audit=true`;
                 await bleu.XHR('GET', url, undefined,Option.header).then((res) => {
                     arryIndex++;
-                    if(!(res.status>=200&&res.status<300)){bleu.swalInfo("🔴💬刷新页面，重新获取header", '', 'center');return}
-                    res.response.files.forEach((item)=>{
+                    res.files.forEach((item)=>{
                         xunlei._pushItem(item);
                     })
+                }, () => {
+                    bleu.swalInfo("❗进出目录之后重新转存", '', 'center')
                 })
             },
             findContext(node) {
@@ -359,8 +356,7 @@
                         authorization: `${token.token_type} ${token.access_token}`
                     };
                 await bleu.XHR('POST', url, JSON.stringify(data), header).then((res) => {
-                    if(!(res.status>=200&&res.status<300)) {bleu.swalInfo("🔴💬刷新页面，重新获取", '', 'center')}
-                    let temp = res.response.video_preview_play_info.live_transcoding_task_list;
+                    let temp = res.video_preview_play_info.live_transcoding_task_list;
                     url =temp.find((item)=>item.template_id===bleuc.calqs)?temp.find((item)=>item.template_id===bleuc.calqs).url:temp[temp.length-1].url;
                     m3u8File+=`\n#EXTINF:-1 ,${item.name}\n#EXTVLCOPT:http-referrer=https://www.aliyundrive.com/\n${url}`;
                 }, () => {
@@ -382,9 +378,10 @@
                     };
                 await bleu.XHR('POST', url, JSON.stringify(data),header).then((res) => {
                     arryIndex++;
-                    if(!(res.status>=200&&res.status<300)){bleu.swalInfo("🔴💬刷新页面，重新获取", '', 'center');return}
-                    res.response.items.forEach((item)=>{
+                    res.items.forEach((item)=>{
                         aliyun._pushItem(item);
+                    }, () => {
+                        bleu.swalInfo("🔴💬刷新页面，重新获取", '', 'center')
                     })
                 })
             },
@@ -500,7 +497,7 @@
                 observer = new MutationObserver(function (mutations) {
                     for (let mutation of mutations) {
                         if (mutation.type === 'childList') {
-                            tools.runFunction('findContext',mutation.target);
+                            cloud.findContext(mutation.target);
                         }
                     }
                 });
@@ -517,20 +514,24 @@
                     tempPath='';
                     m3u8File = "#EXTM3U";
                     if(!tools.checkConfig())return;
-                    tools.runFunction('closeMenu');
-                    tools.runFunction('getselectFilesInfo');
+                    cloud.closeMenu();
+                    cloud.getselectFilesInfo();
+                    if (itemsInfo[arryIndex].length === 0) {
+                        bleu.swalInfo(`❌未选择文件转存!`, 3000, 'center')
+                        return;
+                    }
                     await main.updateAllFiles(itemsInfo[arryIndex]);
-                    tools.runFunction('finallyFunc');
+                    m3u8File != "#EXTM3U"&&cloud.finallyFunc();
                 })
             },
             async updateAllFiles(loopArry) {
                 for (let index = 0; index < loopArry.length; index++) {
                     if (!loopArry[index].isdir) {
-                        await tools.runFunction('updateFile', loopArry[index]);
+                        await cloud.updateFile(loopArry[index]);
                     } else {
                         tempPath += `/${loopArry[index].name}`;
                         await tools.addDavDir();
-                        await tools.runFunction('openNextDir', loopArry[index]);
+                        await cloud.openNextDir(loopArry[index]);
                         await main.updateAllFiles(itemsInfo[arryIndex]);
                     }
                     bleu.sleep(800);
@@ -538,7 +539,8 @@
                 tempPath = tempPath.substring(0, tempPath.lastIndexOf('/'));
             },
         };
-    tools.runFunction('hostname');
+    tools.getCloudName();
+    cloud.hostname();
     tools.checkConfig();
     bleu.addCssStyle(tools.cssStyle);
     GM_registerMenuCommand('配置WEBDAV画质', () => {
