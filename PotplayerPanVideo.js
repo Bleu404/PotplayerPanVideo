@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer播放云盘视频
 // @namespace    https://greasyfork.org/zh-CN/users/798733-bleu
-// @version      1.2.4
+// @version      1.2.5
 // @description  支持🐱‍💻百度网盘(720p)、🐱‍👤迅雷云盘(720p)、🐱‍🏍阿里云盘(1080p)👉右键👈导入播放信息到webdav网盘；支持劫持自定义匹配网站的m3u文件导入webdav网盘。PotPlayer实现🥇倍速、🏆无边框、更换解码器、渲染器等功能。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -29,6 +29,7 @@
 // ==/UserScript==
 (function () {
     'use strict';
+    const ORGXHRSRH = XMLHttpRequest.prototype.setRequestHeader;
     let bleuc,
         contextMenu,
         itemsInfo,
@@ -316,7 +317,8 @@
         }
     const aliyun = {
             hostname(){
-                flag =  'aliyun'
+                flag =  'aliyun';
+                this.hookXHRHeader();
             },
             addTag() {
                 if (contextMenu.innerText.match(/转存播放信息|新建/)) return
@@ -353,8 +355,9 @@
                     },
                     header = {
                         'x-canary': 'client=web,app=adrive,version=v2.4.0',
-                        //'x-device-id': document.cookie.match(/cna=([^;]*)/)[1],
-                        authorization: `${token.token_type} ${token.access_token}`
+                        'x-device-id': document.cookie.match(/cna=([^;]*)/)[1],
+                        authorization: `${token.token_type} ${token.access_token}`,
+                        'x-signature':this._signature
                     };
                 await bleu.XHR('POST', url, JSON.stringify(data), header).then((res) => {
                     let temp = res.video_preview_play_info.live_transcoding_task_list;
@@ -374,8 +377,9 @@
                     },
                     header = {
                         'x-canary': 'client=web,app=adrive,version=v2.4.0',
-                        //'x-device-id': document.cookie.match(/cna=([^;]*)/)[1],
-                        authorization: `${token.token_type} ${token.access_token}`
+                        'x-device-id': document.cookie.match(/cna=([^;]*)/)[1],
+                        authorization: `${token.token_type} ${token.access_token}`,
+                        'x-signature':this._signature
                     };
                 await bleu.XHR('POST', url, JSON.stringify(data),header).then((res) => {
                     arryIndex++;
@@ -407,6 +411,15 @@
                     'name': temp.name,
                 };
                 itemsInfo[arryIndex].push(itemInfo);
+            },
+            _signature:'',
+            hookXHRHeader() {
+                XMLHttpRequest.prototype.setRequestHeader = function(header, value) {
+                    if(header == "x-signature"){
+                        aliyun._signature=value;
+                    }
+                    return ORGXHRSRH.apply(this, arguments);
+                }
             },
             async finallyFunc(){
                 await tools.putFileInWebdav('Playlist.m3u', m3u8File);
