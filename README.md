@@ -2,16 +2,18 @@
 
 |百度网盘| 迅雷云盘|阿里云盘|
 |:---|:----|:---|
-|🌕1080p|🌔720p|🌕1080p|
+|🌕720p|🌔720p|🌕1080p|
 |🌔需配置potplayer|🌕可配置potplayer|🌕可配置potplayer|
 |🌔链接时间限制|🌕链接时间限制|🌒链接时间限制|
 |🌕nplayer|🌕nplayer|🌑nplayer|
 
-## 迅雷云盘和阿里云盘
+## 前排提醒
 
-跳转到新脚本，体验更好[PotPlayer云盘-专供版](https://github.com/Bleu404/PotplayerPanVideoSV/)
+1.百度网盘，普通用户不支持1080p（会员暂时没测试），请选择720p观看。
 
-**没有网盘，或是不想用网盘，只想在线看视频，跳转到[Github_PotplayerM3U8](https://github.com/Bleu404/PotplayerM3U8)**
+2.迅雷云盘和阿里云盘用户可跳转到新脚本，体验更好[PotPlayer云盘-专供版](https://github.com/Bleu404/PotplayerPanVideoSV/)
+
+3.没有网盘，或是不想用网盘，只想在线看视频，跳转到[Github_PotplayerM3U8](https://github.com/Bleu404/PotplayerM3U8)
 
 ## 📢使用前，准备事项📢
 

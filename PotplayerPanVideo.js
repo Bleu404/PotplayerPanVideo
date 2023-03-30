@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer播放云盘视频
 // @namespace    https://greasyfork.org/zh-CN/users/798733-bleu
-// @version      1.2.5
+// @version      1.2.6
 // @description  支持🐱‍💻百度网盘(720p)、🐱‍👤迅雷云盘(720p)、🐱‍🏍阿里云盘(1080p)👉右键👈导入播放信息到webdav网盘；支持劫持自定义匹配网站的m3u文件导入webdav网盘。PotPlayer实现🥇倍速、🏆无边框、更换解码器、渲染器等功能。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -97,7 +97,7 @@
                 }, () => bleu.swalInfo(`❌${name}`, 3000, 'center'));
             },
             checkConfig(){
-                bleuc = JSON.parse(GM_getValue('bleuc')||null)||{cip:'',cun:'',cpw:'',cbdqs:'bd1080',cxlqs:'xl0',calqs:'FHD'}
+                bleuc = JSON.parse(GM_getValue('bleuc')||null)||{cip:'',cun:'',cpw:'',cbdqs:'bd720',cxlqs:'xl0',calqs:'FHD'}
                 if(!(bleuc.cip!=''&&bleuc.cun!=''&&bleuc.cpw!='')){
                     bleu.swalInfo(`❗请先设置WEBDAV画质`, '', 'center')
                     return false
@@ -118,7 +118,7 @@
                 }));
             },
             configHtml(){
-                bleuc = JSON.parse(GM_getValue('bleuc')||null)||{cip:'',cun:'',cpw:'',cbdqs:'bd1080',cxlqs:'xl0',calqs:'FHD'}
+                bleuc = JSON.parse(GM_getValue('bleuc')||null)||{cip:'',cun:'',cpw:'',cbdqs:'bd720',cxlqs:'xl0',calqs:'FHD'}
                 let html = `
                 <div class="bleuc_config_item"><b>WEBDAV</b><p>
                 <div><label>主机:</label><input type="text" class="bleuc_inp" id="cip" value="${bleuc.cip}"/></div>
