@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer播放云盘视频
 // @namespace    https://greasyfork.org/zh-CN/users/798733-bleu
-// @version      1.2.6
+// @version      1.2.7
 // @description  支持🐱‍💻百度网盘(720p)、🐱‍👤迅雷云盘(720p)、🐱‍🏍阿里云盘(1080p)👉右键👈导入播放信息到webdav网盘；支持劫持自定义匹配网站的m3u文件导入webdav网盘。PotPlayer实现🥇倍速、🏆无边框、更换解码器、渲染器等功能。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -49,6 +49,9 @@
                         cloud =  baidu;
                         break;
                     case 'xunlei.com':
+                        cloud = xunlei;
+                        break;
+                    case 'pan.xunlei.com':
                         cloud = xunlei;
                         break;
                     case 'www.aliyundrive.com':
@@ -243,7 +246,7 @@
                 main.addClickEvent();
             },
             getselectFilesInfo() {
-                let temp = document.querySelectorAll('li.pan-list-item.pan-list-item-active');
+                let temp = document.querySelectorAll('li.SourceListItem__item--XxpOC.SourceListItem__active--4U0f4');
                 temp.forEach((item)=>{
                     this._pushItem(item.__vue__.info);
                 })
@@ -259,7 +262,8 @@
                     url = bleuc.cxlqs === 'xl0'?temp[0]:temp[temp.length-1];
                     m3u8File=m3u8File.replace('#EXTM3U',`#EXTM3U\n#EXTINF:-1 ,${item.name}\n${url}`)
                 }, () => {
-                    bleu.swalInfo("❗进出目录之后重新转存", '', 'center')
+                    bleu.swalInfo("❗进出目录之后重新转存", '', 'center');
+                    throw "PPV:迅雷-文件超时，重新转存";
                 })
             },
             async openNextDir(item) {
@@ -270,7 +274,8 @@
                         xunlei._pushItem(item);
                     })
                 }, () => {
-                    bleu.swalInfo("❗进出目录之后重新转存", '', 'center')
+                    bleu.swalInfo("❗进出目录之后重新转存", '', 'center');
+                    throw "PPV:迅雷-文件夹超时，重新转存";
                 })
             },
             findContext(node) {
@@ -364,7 +369,8 @@
                     url =temp.find((item)=>item.template_id===bleuc.calqs)?temp.find((item)=>item.template_id===bleuc.calqs).url:temp[temp.length-1].url;
                     m3u8File+=`\n#EXTINF:-1 ,${item.name}\n#EXTVLCOPT:http-referrer=https://www.aliyundrive.com/\n${url}`;
                 }, () => {
-                    bleu.swalInfo("🔴💬刷新页面，重新获取", '', 'center')
+                    bleu.swalInfo("🔴💬刷新页面，重新获取", '', 'center');
+                    throw "PPV:阿里-文件超时，重新转存";
                 })
             },
             async openNextDir(item) {
@@ -386,7 +392,8 @@
                     res.items.forEach((item)=>{
                         aliyun._pushItem(item);
                     }, () => {
-                        bleu.swalInfo("🔴💬刷新页面，重新获取", '', 'center')
+                        bleu.swalInfo("🔴💬刷新页面，重新获取", '', 'center');
+                        throw "PPV:阿里-文件夹超时，重新转存";
                     })
                 })
             },
@@ -534,7 +541,12 @@
                         bleu.swalInfo(`❌未选择文件转存!`, 3000, 'center')
                         return;
                     }
-                    await main.updateAllFiles(itemsInfo[arryIndex]);
+                    try {
+                        await main.updateAllFiles(itemsInfo[arryIndex]);
+                    } catch (e) {
+                        console.log(e);
+                        return; 
+                    }
                     m3u8File != "#EXTM3U"&&cloud.finallyFunc();
                 })
             },
@@ -555,7 +567,7 @@
         };
     tools.getCloudName();
     cloud.hostname();
-    tools.checkConfig();
+    //tools.checkConfig();
     bleu.addCssStyle(tools.cssStyle);
     GM_registerMenuCommand('配置WEBDAV画质', () => {
         bleu.swalUI('WEBDAV画质', tools.configHtml(), '400px').then(tools.saveConfig)
